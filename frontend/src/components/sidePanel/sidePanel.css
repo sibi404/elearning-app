@@ -1,0 +1,25 @@
+.sidepanel {
+    transition: all .5s ease-in;
+}
+
+.sidepanel ul li a,
+.sidepanel ul li.non-link {
+    padding: 12px 16px;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    cursor: pointer;
+}
+
+.sidepanel ul li img {
+    width: 23px;
+    margin-right: 10px;
+}
+
+.sidepanel a.active {
+    background-color: white;
+    border-radius: 10px;
+    color: black;
+    font-weight: 500;
+}

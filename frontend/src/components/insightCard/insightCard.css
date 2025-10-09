@@ -1,0 +1,14 @@
+.blue-gradient {
+    background: HSL(217 91% 60%);
+    background: linear-gradient(135deg, rgba(60, 131, 246, 1) 0%, rgba(124, 59, 237, 1) 50%);
+}
+
+.green-gradient {
+    background: HSL(142 76% 36%);
+    background: linear-gradient(135deg, rgba(22, 162, 73, 1) 0%, rgba(54, 211, 153, 1) 50%);
+}
+
+.orange-gradient {
+    background: HSL(25 95% 53%);
+    background: linear-gradient(135deg, rgba(249, 116, 21, 1) 0%, rgba(255, 169, 77, 1) 72%);
+}

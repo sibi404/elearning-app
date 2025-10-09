@@ -1,0 +1,17 @@
+@media (max-width: 600px) {
+
+    .welcome-card {
+        padding-top: 30px;
+        padding-bottom: 30px;
+    }
+
+    .welcome-card img {
+        display: none;
+    }
+}
+
+@media (max-width : 450px) {
+    .welcome-card {
+        padding-inline: 20px;
+    }
+}

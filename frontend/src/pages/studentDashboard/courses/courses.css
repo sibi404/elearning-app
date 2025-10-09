@@ -1,0 +1,17 @@
+.course-nav .active {
+    color: black;
+    font-weight: 500;
+    position: relative;
+}
+
+.course-nav .active::before {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background-color: #0A2472;
+    border-radius: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    left: -13px;
+}

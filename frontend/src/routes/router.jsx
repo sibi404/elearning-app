@@ -1,0 +1,58 @@
+import { createBrowserRouter } from "react-router-dom";
+
+import App from "../App";
+import StudentDashboardLayout from "../pages/studentDashboard/StudentDashboard";
+import TeacherDashboardLayout from "../pages/teacherDashboard/TeacherDashboard";
+import Profile from "../pages/studentDashboard/profile/Profile";
+import StudentDashboard from "../pages/studentDashboard/dashboard/Dashboard";
+import Courses from "../pages/studentDashboard/courses/Courses";
+import CourseView from "../pages/courseView/CourseView";
+import Messages from "../pages/studentDashboard/messages/Messages";
+import TeacherDashboard from "../pages/teacherDashboard/dashboard/Dashboard";
+import TeacherCourses from "../pages/teacherDashboard/courses/Courses";
+
+
+export const router = createBrowserRouter([
+    {
+        path: "/",
+        element: <App />
+    },
+    {
+        path: "/student",
+        element: <StudentDashboardLayout />,
+        children: [
+            {
+                index: true, element: <StudentDashboard />
+            },
+            {
+                path: "profile",
+                element: <Profile />
+            },
+            {
+                path: "courses",
+                element: <Courses />
+            },
+            {
+                path: "messages",
+                element: <Messages />
+            }
+        ]
+    },
+    {
+        path: "/student/courses/:id",
+        element: <CourseView />
+    },
+    {
+        path: "/teacher",
+        element: <TeacherDashboardLayout />,
+        children: [
+            {
+                index: true, element: <TeacherDashboard />
+            },
+            {
+                path: "courses",
+                element: <TeacherCourses />
+            }
+        ]
+    }
+]);

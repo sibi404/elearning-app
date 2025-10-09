@@ -1,0 +1,18 @@
+.course-card:hover {
+    transform: scale(1.02);
+    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+    border: none;
+}
+
+.course-card:hover .card-overlay {
+    opacity: 1;
+}
+
+.continue-button {
+    background: linear-gradient(135deg, #0A2472, #2A4BFF, #1E90FF);
+    transition: all .6 ease;
+}
+
+.continue-button:hover {
+    opacity: 0.9;
+}

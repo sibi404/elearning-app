@@ -1,0 +1,10 @@
+.nav-tabs .active {
+    background-color: white;
+    border-radius: inherit;
+    height: calc(100% - 15px);
+    position: absolute;
+    left: 0;
+    transform: translateX(5px);
+    box-shadow: 0 2px 2px #ccc;
+    transition: all .2s ease-in;
+}

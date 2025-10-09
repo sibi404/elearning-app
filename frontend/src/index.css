@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0A2472;
+  --color-primary-fade: #E4E8F7;
+  --color-border-gray: #E0E0E0;
+  --color-text-black: #020817;
+  --color-faded-text: #6A6A6A;
+
+  --font-poppin: "Poppins", "sans-serif";
+
+  --breakpoint-xs: 25rem;
+}
+
+@layer components {
+  .container-border {
+    @apply border border-border-gray rounded-xl;
+  }
+}
+
+/* * {
+  font-family: "Poppins", sans-serif;
+} */
+
+body {
+  color: #333;
+}
+
+::-webkit-scrollbar {
+  width: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.5);
+  ;
+  border-radius: 3px;
+}
