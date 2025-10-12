@@ -1,7 +1,7 @@
 import './courseView.css';
 
 import YouTube from "react-youtube";
-import { useState } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 
 import { CircleCheckBig, ChevronLeft, Download, MessageSquare, Star } from "lucide-react";
 
@@ -15,21 +15,118 @@ import CourseMaterials from './CourseMaterials';
 import CourseAssignments from './CourseAssignments';
 import Notes from './Notes';
 import Discussion from './Discussion';
+import Question from './question/Question';
 
 const CourseView = () => {
 
     const [activeTab, setActiveTab] = useState(0);
+    const playerRef = useRef(null);
+    const containerRef = useRef(null);
 
-    const opts = {
-        width: "100%",
-        height: "100%",
-        playerVars: {
-            autoplay: 0,
-            modestbranding: 1,
-            rel: 0,
-            showinfo: 0,
-        },
+    const lastTimeRef = useRef(0);
+    const maxWatchedTimeRef = useRef(0);
+    const totalWatchedRef = useRef(0);
+    const animationRef = useRef(null);
+
+    const [canProceed, setCanProceed] = useState(false);
+    const [currentQuestion, setCurrentQuestion] = useState(null);
+    const [showQuestion, setShowQuestion] = useState(false);
+    const [questions, setQuestions] = useState([
+        { time: 10, question: "What is 2 + 2?", options: ["3", "4", "5"], answer: "4", answered: false },
+        { time: 25, question: "Which planet is red?", options: ["Earth", "Mars", "Venus"], answer: "Mars", answered: false },
+    ]);
+
+
+    const questionMap = useMemo(() => {
+        const map = new Map();
+        questions.forEach(q => map.set(q.time, q));
+        return map;
+    }, [questions]);
+
+
+    const checkForQuestion = useCallback((second) => {
+        const q = questionMap.get(second);
+        if (q && !q.answered) {
+            playerRef.current.pauseVideo();
+            playerRef.current.seekTo(second - 1);
+            setCurrentQuestion(q);
+            setShowQuestion(true);
+        }
+    }, [questions]);
+
+    const onReady = (event) => {
+        playerRef.current = event.target;
     };
+
+    const onStateChange = (event) => {
+        if (event.data === window.YT.PlayerState.PLAYING) {
+            trackProgress();
+        } else {
+            cancelAnimationFrame(animationRef.current);
+        }
+    };
+
+    const trackProgress = () => {
+        if (!playerRef.current) return;
+
+        const player = playerRef.current;
+        const current = player.getCurrentTime();
+        const duration = player.getDuration();
+        const last = lastTimeRef.current;
+
+        const second = Math.floor(current);
+        checkForQuestion(second);
+
+        // Check if the last time is greater than 0 to prevent false positives at the start.
+        if (last > 0 && current > last + 2 && current > maxWatchedTimeRef.current + 5) {
+            console.log("Manual skip detected → rewinding to", maxWatchedTimeRef.current);
+            player.seekTo(maxWatchedTimeRef.current, true);
+            return;
+        }
+
+        // Update max watched time in the ref
+        if (current > maxWatchedTimeRef.current) {
+            maxWatchedTimeRef.current = current;
+            totalWatchedRef.current += current - last;
+        }
+
+        // Update the last time
+        lastTimeRef.current = current;
+
+        // Calculate progress and update state for the UI
+        const watchedPercent = (Math.min(totalWatchedRef.current, duration) / duration) * 100;
+        // console.log("Watched:", watchedPercent.toFixed(2) + "%");
+
+        if (watchedPercent >= 90 && !canProceed) {
+            setCanProceed(true);
+        }
+        animationRef.current = requestAnimationFrame(trackProgress);
+    };
+
+    useEffect(() => {
+        return () => cancelAnimationFrame(animationRef.current);
+    }, []);
+
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.hidden && playerRef.current) {
+                playerRef.current.pauseVideo();
+            }
+        };
+
+        const handleBlur = () => {
+            if (playerRef.current) playerRef.current.pauseVideo();
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        window.addEventListener("blur", handleBlur);
+
+        return () => {
+            window.removeEventListener("blur", handleBlur);
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        };
+    }, []);
+
 
     return (
         <div className="course-view flex">
@@ -42,8 +139,22 @@ const CourseView = () => {
                             height: "100%",
                             playerVars: { autoplay: 0 }
                         }}
+                        onReady={onReady}
+                        onStateChange={onStateChange}
                         className="absolute top-0 left-0 w-full h-full "
                     />
+
+                    {
+                        showQuestion &&
+                        <Question
+                            question={currentQuestion}
+                            setCurrentQuestion={setCurrentQuestion}
+                            setShowQuestion={setShowQuestion}
+                            setQuestions={setQuestions}
+                            playerRef={playerRef}
+                        />
+                    }
+
                 </div>
                 <div className='px-2'>
                     <div className="flex items-center justify-between flex-col sm:flex-row mt-5">

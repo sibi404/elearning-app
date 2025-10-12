@@ -10,6 +10,8 @@ import CourseView from "../pages/courseView/CourseView";
 import Messages from "../pages/studentDashboard/messages/Messages";
 import TeacherDashboard from "../pages/teacherDashboard/dashboard/Dashboard";
 import TeacherCourses from "../pages/teacherDashboard/courses/Courses";
+import Login from "../pages/login/Login";
+import ProtectedRoute from "../components/protectedRoute/ProtectedRoute";
 
 
 export const router = createBrowserRouter([
@@ -18,40 +20,54 @@ export const router = createBrowserRouter([
         element: <App />
     },
     {
-        path: "/student",
-        element: <StudentDashboardLayout />,
+        path: "/login",
+        element: <Login />
+    },
+    {
+        element: <ProtectedRoute allowedRoles={["STUDENT"]} />,
         children: [
             {
-                index: true, element: <StudentDashboard />
-            },
-            {
-                path: "profile",
-                element: <Profile />
-            },
-            {
-                path: "courses",
-                element: <Courses />
-            },
-            {
-                path: "messages",
-                element: <Messages />
+                path: "/student",
+                element: <StudentDashboardLayout />,
+                children: [
+                    {
+                        index: true, element: <StudentDashboard />
+                    },
+                    {
+                        path: "profile",
+                        element: <Profile />
+                    },
+                    {
+                        path: "courses",
+                        element: <Courses />
+                    },
+                    {
+                        path: "courses/:id",
+                        element: <CourseView />
+                    },
+                    {
+                        path: "messages",
+                        element: <Messages />
+                    }
+                ]
             }
         ]
     },
     {
-        path: "/student/courses/:id",
-        element: <CourseView />
-    },
-    {
-        path: "/teacher",
-        element: <TeacherDashboardLayout />,
+        element: <ProtectedRoute allowedRoles={["TEACHER"]} />,
         children: [
             {
-                index: true, element: <TeacherDashboard />
-            },
-            {
-                path: "courses",
-                element: <TeacherCourses />
+                path: "/teacher",
+                element: <TeacherDashboardLayout />,
+                children: [
+                    {
+                        index: true, element: <TeacherDashboard />
+                    },
+                    {
+                        path: "courses",
+                        element: <TeacherCourses />
+                    }
+                ]
             }
         ]
     }
