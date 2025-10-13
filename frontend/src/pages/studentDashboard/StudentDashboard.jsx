@@ -1,7 +1,7 @@
 import DashboardHeader from '../../components/dashboardHeader/DashboardHeader';
 import SidePanel from '../../components/sidePanel/SidePanel';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { Outlet } from 'react-router-dom';
 
@@ -16,6 +16,7 @@ import deadlineIcon from '../../assets/icons/deadline.png';
 const StudentDashboard = () => {
 
     const [sidePanel, setSidePanel] = useState(false);
+    const userData = JSON.parse(localStorage.getItem("userData"));
 
     const navigation = [
         {
@@ -48,7 +49,7 @@ const StudentDashboard = () => {
             <SidePanel sidePanel={sidePanel} setSidePanel={setSidePanel} navigation={navigation} quickAccess={quickAccess} dashboardLink="/student" />
 
             <main className="flex-1 overflow-y-scroll xl:m-2 xl:rounded-2xl  bg-[#F9FAFB]">
-                <DashboardHeader setSidePanel={setSidePanel} name={{ firstName: "John", lastName: "Doe" }} />
+                <DashboardHeader setSidePanel={setSidePanel} name={{ firstName: userData.firstName, lastName: userData.lastName }} />
                 <Outlet />
             </main>
         </div>

@@ -1,5 +1,3 @@
-import taskIcon from '../../assets/icons/task.png';
-import deadlineIcon from '../../assets/icons/deadline.png';
 import logoutIcon from '../../assets/icons/logout.png';
 import closeIcon from '../../assets/icons/close.png';
 import homeIcon from '../../assets/icons/home.png';
@@ -10,21 +8,34 @@ import './sidePanel.css';
 
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
+import axios from 'axios';
 
 import NavLinkItem from './NavLinkItem';
 
 import { AuthContext } from '../../context/AuthContext';
+import { BASE_URL } from '../../config';
+import { getCookie } from '../../utils/cookies';
 
 const SidePanel = ({ sidePanel, setSidePanel, navigation, quickAccess, dashboardLink }) => {
     const navigate = useNavigate();
-    const { setToken, setRole } = useContext(AuthContext);
+    const { setToken } = useContext(AuthContext);
 
-    const handleLogout = () => {
-        setToken(null);
-        setRole(null);
-        console.log("Logged out");
-        navigate("/");
+    const handleLogout = async () => {
+        try {
+            const response = await axios.post(`${BASE_URL}/auth/logout/`, null, {
+                withCredentials: true,
+                headers: { "X-CSRFToken": getCookie("csrftoken") }
+            });
+
+            setToken(null);
+            localStorage.removeItem("userData");
+            console.log("Logged out");
+            navigate("/");
+        } catch (err) {
+            console.error("Logout Falied : ", err);
+        }
     };
+
     return (
         <aside className={`sidepanel fixed xl:static ${sidePanel ? "translate-x-0" : "-translate-x-full"} xl:translate-x-0 text-white min-h-screen xl:w-[18%] bg-primary p-8 flex flex-col z-20`}>
             <div className='xl:hidden absolute top-5 right-5 cursor-pointer' onClick={() => setSidePanel((prev) => !prev)}>

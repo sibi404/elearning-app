@@ -52,7 +52,14 @@ const ProtectedRoute = ({ allowedRoles }) => {
             }
         };
 
+        const userData = localStorage.getItem("userData");
+        if (!userData) {
+            setIsValid(false);
+            return;
+        }
+
         verifyToken();
+
     }, [token, setToken]);
 
     if (isValid === null) {

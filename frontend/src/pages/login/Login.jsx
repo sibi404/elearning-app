@@ -13,7 +13,7 @@ const Login = () => {
 
     const handleSubmit = () => {
         console.log("LOGIN ATTEMPT");
-        axios.post(`${BASE_URL}auth/api/token/`, {
+        axios.post(`${BASE_URL}/auth/api/token/`, {
             username: user.username,
             password: user.password
         },
