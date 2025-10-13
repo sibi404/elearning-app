@@ -33,3 +33,9 @@ class Teacher(models.Model):
 
     def __str__(self):
         return self.user.first_name
+
+class Management(models.Model):
+    user = models.OneToOneField(User,on_delete=models.CASCADE,primary_key=True,related_name='management_profile')
+
+    def __str__(self):
+        return self.user.first_name

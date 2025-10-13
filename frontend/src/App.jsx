@@ -12,7 +12,9 @@ function App() {
         <Link to={'/teacher'}>
           <button className="bg-black text-white font-bold py-2 px-4 cursor-pointer">TEACHER</button>
         </Link>
-        <button className="bg-black text-white font-bold py-2 px-4 cursor-pointer">ADMIN</button>
+        <Link to={'/management'}>
+          <button className="bg-black text-white font-bold py-2 px-4 cursor-pointer">ADMIN</button>
+        </Link>
       </div>
     </>
   );

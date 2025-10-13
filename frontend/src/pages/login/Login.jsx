@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 
 import { AuthContext } from "../../context/AuthContext";
@@ -67,11 +67,21 @@ const Login = () => {
                     onChange={(e) => setUser((prev) => ({ ...prev, password: e.target.value }))}
                 />
                 <button
-                    className="w-full px-3 py-2 mt-3 bg-blue-400 rounded-md font-semibold text-white"
+                    className="w-full px-3 py-2 mt-3 bg-blue-400 rounded-md font-semibold text-white cursor-pointer"
                     onClick={handleSubmit}
                 >
                     Login
                 </button>
+                <div className="text-center mt-6">
+                    <p className="text-sm text-gray-600">
+                        Don't have an account?{' '}
+                        <Link to="/signup" >
+                            <button className="text-blue-600 hover:text-blue-500 transition-colors">
+                                Signup
+                            </button>
+                        </Link>
+                    </p>
+                </div>
             </div>
 
         </div>

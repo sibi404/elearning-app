@@ -12,6 +12,8 @@ import TeacherDashboard from "../pages/teacherDashboard/dashboard/Dashboard";
 import TeacherCourses from "../pages/teacherDashboard/courses/Courses";
 import Login from "../pages/login/Login";
 import ProtectedRoute from "../components/protectedRoute/ProtectedRoute";
+import AdminDashboard from "../pages/adminDashboard/AdminDashboard";
+import SignUp from "../pages/signUp/SignUp";
 
 
 export const router = createBrowserRouter([
@@ -22,6 +24,10 @@ export const router = createBrowserRouter([
     {
         path: "/login",
         element: <Login />
+    },
+    {
+        path: "/signup",
+        element: <SignUp />
     },
     {
         element: <ProtectedRoute allowedRoles={["STUDENT"]} />,
@@ -68,6 +74,15 @@ export const router = createBrowserRouter([
                         element: <TeacherCourses />
                     }
                 ]
+            }
+        ]
+    },
+    {
+        element: <ProtectedRoute allowedRoles={["MANAGEMENT"]} />,
+        children: [
+            {
+                path: "/management",
+                element: <AdminDashboard />
             }
         ]
     }
