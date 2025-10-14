@@ -6,12 +6,37 @@ import InsightCard from '../../../components/insightCard/InsightCard';
 import AnnouncementCard from '../../../components/announcementCard/AnnouncementCard';
 import CourseCard from '../../../components/courseCard/CourseCard';
 import DeadlineCard from '../../../components/deadlineCard/DeadlineCard';
+import EmptyMessage from '../emptyMessage/EmptyMessage';
+
+import { usePrivateApi } from '../../../hooks/usePrivateApi';
 
 import { BookOpen, MessageSquare, CircleAlert } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
+
 
 
 const Dashboard = () => {
+    const [enrolledCourses, setEnrolledCourses] = useState([]);
+    const api = usePrivateApi();
+
+    const getData = async () => {
+        console.log("Requesting enrollment");
+        try {
+            const response = await api.get("enrollment/enrolled-courses/");
+            if (response.status === 200) {
+                setEnrolledCourses(response.data);
+                localStorage.setItem("enrolledCourses", JSON.stringify(response.data));
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    useEffect(() => {
+        getData();
+    }, []);
+
     return (
         <div className='flex flex-col sm:flex-row min-h-[70vh] mt-6 p-2 lg:p-0'>
             <main className='flex-1'>
@@ -25,12 +50,25 @@ const Dashboard = () => {
                         <BookOpen className='text-primary' size={20} />
                         <h2 className='text-md text-text-black '>My Courses</h2>
                     </div>
-                    <div className='flex flex-wrap items-center justify-between mt-3 h-[55vh] overflow-y-scroll'>
-                        <CourseCard />
-                        <CourseCard />
-                        <CourseCard />
-                        <CourseCard />
-                    </div>
+                    {
+                        enrolledCourses.length ?
+                            <div className='flex flex-wrap items-stretch gap-3 mt-3 h-[55vh] overflow-y-scroll'>
+                                {
+                                    enrolledCourses.map((course) => (
+                                        <CourseCard
+                                            key={course.id}
+                                            title={course.title}
+                                            teacher={course.teacher}
+                                            duration={course.duration}
+                                            description={course.description}
+                                            thumbnail={course.thumbnail}
+                                        />
+                                    ))
+                                }
+                            </div>
+                            :
+                            <EmptyMessage />
+                    }
                 </div>
             </main>
             <aside className='w-full sm:w-[40%] lg:w-[23%]'>

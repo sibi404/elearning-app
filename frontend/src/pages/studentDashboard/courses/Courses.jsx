@@ -2,10 +2,12 @@ import { useState } from 'react';
 import './courses.css';
 
 import CourseCard from '../../../components/courseCard/CourseCard';
+import EmptyMessage from '../emptyMessage/EmptyMessage';
 
 const Courses = () => {
     const [activeIndex, setActiveIndex] = useState(0);
     const links = ["All", "Active", "Completed"]
+    const enrolledCourses = JSON.parse(localStorage.getItem("enrolledCourses") || "[]");
     return (
         <div className="p-2 m-5 bg-white">
             <h2 className="font-bold text-2xl">My Courses</h2>
@@ -20,12 +22,25 @@ const Courses = () => {
                     ))
                 }
             </ul>
-            <div className='flex flex-wrap items-center justify-between mt-3 overflow-y-scroll'>
-                <CourseCard />
-                <CourseCard />
-                <CourseCard />
-                <CourseCard />
-            </div>
+            {
+                enrolledCourses.length ?
+                    <div className='flex flex-wrap items-stretch gap-3 mt-3 h-[55vh] overflow-y-scroll'>
+                        {
+                            enrolledCourses.map((course) => (
+                                <CourseCard
+                                    key={course.id}
+                                    title={course.title}
+                                    teacher={course.teacher}
+                                    duration={course.duration}
+                                    description={course.description}
+                                    thumbnail={course.thumbnail}
+                                />
+                            ))
+                        }
+                    </div>
+                    :
+                    <EmptyMessage />
+            }
         </div>
     );
 };

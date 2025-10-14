@@ -1,7 +1,7 @@
 import DashboardHeader from '../../components/dashboardHeader/DashboardHeader';
 import SidePanel from '../../components/sidePanel/SidePanel';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 import { Outlet } from 'react-router-dom';
 

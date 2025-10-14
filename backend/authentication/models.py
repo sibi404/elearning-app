@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from enrollments.models import Enrollment
+
 # Create your models here.
 
 class UserRole(models.TextChoices):
@@ -23,6 +25,7 @@ class UsersProfile(models.Model):
 class Student(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE, primary_key=True, related_name='student_profile')
     date_of_birth = models.DateField(null=True,blank=True)
+    courses = models.ManyToManyField('courses.Course',through=Enrollment,related_name='students')
 
     def __str__(self):
         return self.user.username
@@ -32,7 +35,7 @@ class Teacher(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE,primary_key=True, related_name='teacher_profile')
 
     def __str__(self):
-        return self.user.first_name
+        return self.user.get_full_name() or self.user.first_name
 
 class Management(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE,primary_key=True,related_name='management_profile')

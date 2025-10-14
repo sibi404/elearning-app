@@ -21,7 +21,6 @@ const Login = () => {
                 withCredentials: true
             })
             .then((response) => {
-                console.log(response);
                 if (response.status === 200) {
                     setToken(response.data.access);
                     localStorage.setItem("userData", JSON.stringify(

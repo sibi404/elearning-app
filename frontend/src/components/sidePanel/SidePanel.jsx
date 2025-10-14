@@ -29,6 +29,7 @@ const SidePanel = ({ sidePanel, setSidePanel, navigation, quickAccess, dashboard
 
             setToken(null);
             localStorage.removeItem("userData");
+            localStorage.removeItem("enrolledCourses");
             console.log("Logged out");
             navigate("/");
         } catch (err) {
