@@ -11,39 +11,30 @@ import EmptyMessage from '../emptyMessage/EmptyMessage';
 import { usePrivateApi } from '../../../hooks/usePrivateApi';
 
 import { BookOpen, MessageSquare, CircleAlert } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 
 
 
 const Dashboard = () => {
-    const [enrolledCourses, setEnrolledCourses] = useState([]);
     const api = usePrivateApi();
+    const { enrolledCourses, completedCount } = useOutletContext();
+    const overallProgress = enrolledCourses.length > 0
+        ? (enrolledCourses.reduce((acc, course) => acc + parseFloat(course.progress), 0) / enrolledCourses.length)
+        : 0;
 
-    const getData = async () => {
-        console.log("Requesting enrollment");
-        try {
-            const response = await api.get("enrollment/enrolled-courses/");
-            if (response.status === 200) {
-                setEnrolledCourses(response.data);
-                localStorage.setItem("enrolledCourses", JSON.stringify(response.data));
-            }
-        } catch (err) {
-            console.log(err);
-        }
-    }
-
-    useEffect(() => {
-        getData();
-    }, []);
 
     return (
         <div className='flex flex-col sm:flex-row min-h-[70vh] mt-6 p-2 lg:p-0'>
             <main className='flex-1'>
                 <div className='flex items-center justify-between flex-wrap p-3'>
-                    <InsightCard title={"Enrolled Courses"} value={6} background={"blue-gradient"} img={openBookIcon} />
-                    <InsightCard title={"Overall Progress"} value={"74%"} background={"green-gradient"} img={progressIcon} />
-                    <InsightCard title={"Course Completed"} value={2} background={"orange-gradient"} img={trophyIcon} />
+                    <InsightCard title={"Enrolled Courses"} value={enrolledCourses.length} background={"blue-gradient"} img={openBookIcon} />
+                    <InsightCard
+                        title={"Overall Progress"}
+                        value={`${overallProgress % 1 === 0 ? overallProgress : overallProgress.toFixed(1)}%`}
+                        background={"green-gradient"}
+                        img={progressIcon}
+                    />
+                    <InsightCard title={"Course Completed"} value={completedCount} background={"orange-gradient"} img={trophyIcon} />
                 </div>
                 <div className='container-border lg:ml-2 p-5 '>
                     <div className='flex items-center justify-start gap-3'>
@@ -62,6 +53,7 @@ const Dashboard = () => {
                                             duration={course.duration}
                                             description={course.description}
                                             thumbnail={course.thumbnail}
+                                            studentCount={course.total_students}
                                         />
                                     ))
                                 }

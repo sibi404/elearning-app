@@ -14,6 +14,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         data['username'] = self.user.username
         data['firstname'] = self.user.first_name
         data['lastname'] = self.user.last_name
+        data['email'] = self.user.email
         return data
 
 
@@ -33,3 +34,11 @@ class UserSerializer(serializers.ModelSerializer):
             password=validated_data['password']
         ) 
         return user
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+
+    class Meta:
+        model = UsersProfile
+        fields = ['user','phone_number','role']

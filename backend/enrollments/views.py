@@ -7,6 +7,7 @@ from rest_framework import status
 
 from authentication.models import Student
 from courses.serializers import CourseSerializer
+from . serializers import EnrollmentSerializer
 
 # Create your views here.
 
@@ -15,7 +16,12 @@ from courses.serializers import CourseSerializer
 @permission_classes([IsAuthenticated])
 def get_enrolled_courses(request):
     student = get_object_or_404(Student, user=request.user)
-    courses = student.courses.all()
-    serializer = CourseSerializer(courses,many=True,context={'request': request})
-    return Response(serializer.data,status=status.HTTP_200_OK)
+    enrollments = student.enrollment_set.select_related('course')
+    serializer = EnrollmentSerializer(enrollments,many=True,context={'request' : request})
+    completed_count = enrollments.filter(completed=True).count()
+
+    return Response({
+        "completed_count" : completed_count,
+        "enrollments" : serializer.data
+    },status=status.HTTP_200_OK)
 

@@ -28,7 +28,8 @@ const Login = () => {
                             role: response.data.role,
                             username: response.data.username,
                             firstName: response.data.firstname,
-                            lastName: response.data.lastname
+                            lastName: response.data.lastname,
+                            email: response.data.email,
                         }
                     ));
 

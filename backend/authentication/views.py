@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie,csrf_protect,csrf_exempt
 from django.db import transaction,IntegrityError
+from django.shortcuts import get_object_or_404
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -11,7 +12,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.exceptions import TokenError,InvalidToken
 
-from . serializers import UserSerializer
+from . serializers import UserSerializer,UserProfileSerializer
 from . models import UsersProfile,Student
 # Create your views here.
 
@@ -95,6 +96,15 @@ def check_username(request):
     exists = User.objects.filter(username=username).exists()
 
     return Response({"exists" : exists},status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def user_info_view(request):
+    user_profile = get_object_or_404(UsersProfile,user=request.user)
+    serializer = UserProfileSerializer(user_profile)
+
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
     
 
 @api_view(['POST'])

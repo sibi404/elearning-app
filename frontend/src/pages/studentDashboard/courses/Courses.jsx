@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
+
 import './courses.css';
 
 import CourseCard from '../../../components/courseCard/CourseCard';
@@ -7,7 +9,7 @@ import EmptyMessage from '../emptyMessage/EmptyMessage';
 const Courses = () => {
     const [activeIndex, setActiveIndex] = useState(0);
     const links = ["All", "Active", "Completed"]
-    const enrolledCourses = JSON.parse(localStorage.getItem("enrolledCourses") || "[]");
+    const { enrolledCourses } = useOutletContext();
     return (
         <div className="p-2 m-5 bg-white">
             <h2 className="font-bold text-2xl">My Courses</h2>
@@ -34,6 +36,7 @@ const Courses = () => {
                                     duration={course.duration}
                                     description={course.description}
                                     thumbnail={course.thumbnail}
+                                    studentCount={course.total_students}
                                 />
                             ))
                         }

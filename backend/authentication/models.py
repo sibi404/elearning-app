@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from phonenumber_field.modelfields import PhoneNumberField
+
 from enrollments.models import Enrollment
 
 # Create your models here.
@@ -13,6 +15,7 @@ class UserRole(models.TextChoices):
 
 class UsersProfile(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE,related_name='profile')
+    phone_number = PhoneNumberField(blank=True)
     role = models.CharField(
         max_length=30,
         choices=UserRole.choices
