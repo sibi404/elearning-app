@@ -10,6 +10,7 @@ class Enrollment(models.Model):
     enrolled_on = models.DateTimeField(default=timezone.now)
     progress = models.DecimalField(max_digits=5,decimal_places=1,default=0.0)
     completed = models.BooleanField(default=False)
+    last_viewed_lesson = models.ForeignKey('courses.Lesson',on_delete=models.SET_NULL,null=True,blank=True,related_name='+')
 
     class Meta:
         unique_together = ('student','course')

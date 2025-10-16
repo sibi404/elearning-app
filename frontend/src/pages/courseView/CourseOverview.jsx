@@ -1,11 +1,12 @@
 import SectionTitle from "./SectionTitle";
 
-const CourseOverview = () => {
+const CourseOverview = ({ about }) => {
+    console.log(about);
     return (
         <div>
             <SectionTitle title="About This Lesson" />
             <p className='text-faded-text text-sm md:text-base'>
-                In this lesson, we'll dive into the fundamentals of Linux, exploring its file system, basic commands, and essential terminal operations. You'll learn how to navigate directories, manage files, and understand user permissions, laying a strong foundation for working efficiently in any Linux environment.
+                {about}
             </p>
 
             <h2 className='md:text-xl font-medium py-5'>Learning Objectives</h2>

@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 
 const DashboardHeader = ({ setSidePanel, name }) => {
     return (
-        <header className="w-full p-10 h-[10vh] flex items-center justify-between border-b border-b-border-gray bg-white sticky top-0 z-10">
+        <header className="w-full p-10 h-[10vh] flex items-center justify-between border-b border-b-border-gray bg-white sticky top-0 z-40">
             <div className="flex items-center">
                 <img src={sidepanelIcon} alt="" className="mr-2 cursor-pointer xl:hidden" onClick={() => setSidePanel((prev) => !prev)} />
                 <h3 className="hidden xs:block text-sm md:text-base">Welcom back, {name.firstName} 👋</h3>

@@ -13,6 +13,7 @@ import taskIcon from '../../assets/icons/task.png';
 import deadlineIcon from '../../assets/icons/deadline.png';
 
 import { usePrivateApi } from '../../hooks/usePrivateApi';
+import { DATE_FORMAT } from '../../config';
 
 const StudentDashboard = () => {
 
@@ -60,6 +61,7 @@ const StudentDashboard = () => {
                     ...enrollment.course,
                     progress: enrollment.progress,
                     completed: enrollment.completed,
+                    lastViewed: enrollment.last_viewed_lesson,
                 }));
                 setEnrolledCourses(courses);
                 setCompletedCount(completed_count);
@@ -68,8 +70,9 @@ const StudentDashboard = () => {
             //for usersInfo
             const userInfoResponse = await api.get("auth/user-info/");
             const resData = userInfoResponse.data;
+            const date = new Date(resData.date_joined);
             setUserData(
-                { ...resData.user, phoneNumber: resData.phone_number, role: resData.role }
+                { ...resData.user, phoneNumber: resData.phone_number, role: resData.role, dateJoined: date.toLocaleDateString("en-IN", DATE_FORMAT) }
             )
 
         } catch (err) {

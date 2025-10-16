@@ -54,6 +54,7 @@ const Dashboard = () => {
                                             description={course.description}
                                             thumbnail={course.thumbnail}
                                             studentCount={course.total_students}
+                                            slug={course.slug}
                                         />
                                     ))
                                 }

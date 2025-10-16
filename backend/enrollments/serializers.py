@@ -1,13 +1,14 @@
 from rest_framework import serializers
 
 from . models import Enrollment
-from courses.serializers import CourseSerializer
+from courses.serializers import CourseSerializer,LessonListSerializer
 
 class EnrollmentSerializer(serializers.ModelSerializer):
     course = CourseSerializer()
+    last_viewed_lesson = LessonListSerializer()
     class Meta:
         model = Enrollment
-        fields = ['course','progress','completed','enrolled_on']
+        fields = ['course','progress','completed','enrolled_on','last_viewed_lesson']
     
     def validate_progress(self,value):
         if value < 0:
@@ -17,6 +18,6 @@ class EnrollmentSerializer(serializers.ModelSerializer):
         return value
     
     def validate(self, attrs):
-        if attrs.get('completed') and attrs.get('progress', self.instance.progress if self.instance else 0) < 90:
+        if attrs.get('completed') and attrs.get('progress', self.instance.progress if self.instance else 0) < 100:
             raise serializers.ValidationError("Cannot mark as complete unless progress is 100.")
         return attrs

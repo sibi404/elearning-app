@@ -11,10 +11,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data =  super().validate(attrs)
         data['role'] = self.user.profile.role
-        data['username'] = self.user.username
-        data['firstname'] = self.user.first_name
-        data['lastname'] = self.user.last_name
-        data['email'] = self.user.email
         return data
 
 
@@ -41,4 +37,4 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UsersProfile
-        fields = ['user','phone_number','role']
+        fields = ['user','phone_number','role','date_joined']

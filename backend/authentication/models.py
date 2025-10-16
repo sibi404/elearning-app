@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -16,6 +17,7 @@ class UserRole(models.TextChoices):
 class UsersProfile(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE,related_name='profile')
     phone_number = PhoneNumberField(blank=True)
+    date_joined = models.DateField(default=timezone.now)
     role = models.CharField(
         max_length=30,
         choices=UserRole.choices

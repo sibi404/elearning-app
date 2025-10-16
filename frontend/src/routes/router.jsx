@@ -16,6 +16,7 @@ import AdminDashboard from "../pages/adminDashboard/AdminDashboard";
 import SignUp from "../pages/signUp/SignUp";
 
 import { usePrivateApi } from "../hooks/usePrivateApi";
+import Lesson from "../pages/courseView/Lesson";
 
 
 export const router = createBrowserRouter([
@@ -50,8 +51,14 @@ export const router = createBrowserRouter([
                         element: <Courses />
                     },
                     {
-                        path: "courses/:id",
-                        element: <CourseView />
+                        path: "courses/:courseSlug",
+                        element: <CourseView />,
+                        children: [
+                            {
+                                path: "lessons/:lessonSlug",
+                                element: <Lesson />
+                            }
+                        ]
                     },
                     {
                         path: "messages",

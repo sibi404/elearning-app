@@ -19,8 +19,8 @@ const Profile = () => {
                 <h3 className='font-semibold'>Personal Information</h3>
                 <div className='flex items-center justify-between flex-wrap'>
                     <ProfileInfoCard icon={Mail} title={"Email"} detail={userData.email} />
-                    <ProfileInfoCard icon={Phone} title={"Phone"} detail={"9803457892"} />
-                    <ProfileInfoCard icon={CalendarDays} title={"Enrollment Date"} detail={"24 June 2025"} />
+                    <ProfileInfoCard icon={Phone} title={"Phone"} detail={`${userData.phone_number ? userData.phone_number : "-"}`} />
+                    <ProfileInfoCard icon={CalendarDays} title={"Enrollment Date"} detail={userData.dateJoined} />
                     <ProfileInfoCard icon={MapPin} title={"Address"} detail={"Kozhikode, Kerala"} />
 
                 </div>
