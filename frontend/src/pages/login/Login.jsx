@@ -1,6 +1,7 @@
-import { useContext, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useContext, useRef, useState } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import axios from "axios";
+import { Toast } from 'primereact/toast';
 
 import { AuthContext } from "../../context/AuthContext";
 import { BASE_URL } from "../../config";
@@ -8,8 +9,16 @@ import { BASE_URL } from "../../config";
 const Login = () => {
     const [user, setUser] = useState({ username: "", password: "" });
     const navigate = useNavigate();
+    const location = useLocation();
+    const toast = useRef(null);
 
-    const { setToken } = useContext(AuthContext);
+    const { setToken, setRole } = useContext(AuthContext);
+
+    const from = location.state?.from?.pathname || false;
+
+    const show = () => {
+        toast.current.show({ severity: 'error', summary: 'Network Error', detail: 'Check your inernet connection' });
+    };
 
     const handleSubmit = () => {
         console.log("LOGIN ATTEMPT");
@@ -23,15 +32,14 @@ const Login = () => {
             .then((response) => {
                 if (response.status === 200) {
                     setToken(response.data.access);
-                    localStorage.setItem("userData", JSON.stringify(
-                        {
-                            role: response.data.role,
-                            username: response.data.username,
-                            firstName: response.data.firstname,
-                            lastName: response.data.lastname,
-                            email: response.data.email,
-                        }
-                    ));
+                    localStorage.setItem("userRole", response.data.role);
+
+                    setRole(response.data.role);
+
+                    if (from) {
+                        navigate(from, { replace: true });
+                        return;
+                    }
 
                     const role = response.data.role;
                     if (role === "STUDENT") {
@@ -45,11 +53,13 @@ const Login = () => {
             })
             .catch((error) => {
                 console.log(error);
+                if (error.code === "ERR_NETWORK") { show(); }
             })
     };
 
     return (
         <div className="w-full h-screen flex justify-center items-center">
+            <Toast ref={toast} />
             <div className="flex flex-col items-center justify-center w-[30%]">
                 <input
                     type="text"

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . models import *
+from . import models
 
 # Register your models here.
 
@@ -9,5 +9,9 @@ class CourseAdmin(admin.ModelAdmin):
 class LessonAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug' : ("title","order")}
 
-admin.site.register(Course,CourseAdmin)
-admin.site.register(Lesson,LessonAdmin)
+admin.site.register(models.Course,CourseAdmin)
+admin.site.register(models.Lesson,LessonAdmin)
+admin.site.register(models.LessonMaterials)
+admin.site.register(models.StudentAnswer)
+admin.site.register(models.LessonQuestion)
+admin.site.register(models.QuestionOption)

@@ -1,7 +1,6 @@
 import SectionTitle from "./SectionTitle";
 
 const CourseOverview = ({ about }) => {
-    console.log(about);
     return (
         <div>
             <SectionTitle title="About This Lesson" />

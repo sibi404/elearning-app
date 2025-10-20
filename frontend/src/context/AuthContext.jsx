@@ -4,7 +4,7 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(null);
-    const [role, setRole] = useState(() => JSON.parse(localStorage.getItem("userData") || "{}")?.role || null);
+    const [role, setRole] = useState(() => localStorage.getItem("userRole") || null);
 
     return (
         <AuthContext.Provider value={{ token, setToken, role, setRole }}>

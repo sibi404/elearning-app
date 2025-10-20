@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom';
 
 const CourseCard = ({ title, teacher, description, duration, thumbnail, studentCount, slug }) => {
     return (
-        <div className="course-card mt-3 container-border max-h-[420px] w-full lg:w-[32%] overflow-hidden transition-all duration-100">
+        <div className="course-card mt-3 container-border max-h-[450px] w-full lg:w-[32%] overflow-hidden transition-all duration-100">
             <div className='relative'>
                 <div className='card-overlay opacity-0 absolute w-full h-full bg-gray-600/50 flex items-center justify-center transition-all duration-500'>
                     <Link to={`/student/courses/${slug}`} className='continue-button py-3 px-6 rounded-lg text-white cursor-pointer'>Continue Learning</Link>

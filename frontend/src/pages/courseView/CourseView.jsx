@@ -10,15 +10,16 @@ import { usePrivateApi } from '../../hooks/usePrivateApi';
 
 import LessonCard from "./LessonCard";
 import ActionCard from "./ActionCard";
+import Error from '../../components/error/Error';
 
 const CourseView = () => {
 
     const [course, setCourse] = useState(null);
     const [lessons, setLessons] = useState([]);
+    const [error, setError] = useState("");
 
     const api = usePrivateApi();
     const navigate = useNavigate();
-
     const { courseSlug } = useParams();
     const { enrolledCourses } = useOutletContext();
 
@@ -27,19 +28,29 @@ const CourseView = () => {
     }, [enrolledCourses, courseSlug]);
 
     useEffect(() => {
-        const getLessons = async () => {
+        const getLessons = async (retries = 2, delay = 500) => {
             try {
-                const respone = await api.get(`course/get-lessons/${course.id}`);
-                console.log(respone.data)
-                setLessons(respone.data);
+                const response = await api.get(`course/get-lessons/${course.id}`);
+                setLessons(response.data);
+                setError(null);
             } catch (err) {
-                console.log(err);
-            };
+                if (retries > 0) {
+                    console.log(`Retrying... attempts left: ${retries}`);
+                    setTimeout(() => getLessons(retries - 1, delay), delay);
+                } else {
+                    console.log(err);
+                    if (err.response?.status === 404) {
+                        setError("No Lessons found...");
+                        return;
+                    }
+                    setError("Unable to get lessons...");
+                }
+            }
         };
 
         if (course) {
             getLessons();
-        };
+        }
 
     }, [course]);
 
@@ -47,9 +58,11 @@ const CourseView = () => {
         if (course?.lastViewed?.slug) {
             navigate(`lessons/${course.lastViewed.slug}`, { replace: true });
         } else if (course && lessons.length > 0) {
-            navigate(`lessons/${lessons[0].slug}`);
+            navigate(`lessons/${lessons[0].slug}`, { replace: true });
         }
     }, [course, lessons]);
+
+    if (error) return <Error message={error} />
 
     return (
         <div className="course-view flex">

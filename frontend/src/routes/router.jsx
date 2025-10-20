@@ -15,7 +15,6 @@ import ProtectedRoute from "../components/protectedRoute/ProtectedRoute";
 import AdminDashboard from "../pages/adminDashboard/AdminDashboard";
 import SignUp from "../pages/signUp/SignUp";
 
-import { usePrivateApi } from "../hooks/usePrivateApi";
 import Lesson from "../pages/courseView/Lesson";
 
 

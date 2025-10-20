@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from . models import Course,Lesson
+from . models import Course,Lesson,LessonMaterials,LessonQuestion,QuestionOption
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -19,3 +19,44 @@ class LessonListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = ['id','title','completed','slug']
+
+
+class LessonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = '__all__'
+
+class LessonMaterialSerializer(serializers.ModelSerializer):
+    size = serializers.SerializerMethodField()
+
+    class Meta:
+        model = LessonMaterials
+        fields = ['id','title','material_type','size']
+    
+    def get_size(self,obj):
+        if obj.file:
+            return obj.file.size
+        return 0
+    
+class QuestionOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QuestionOption
+        fields = ['option_text']
+
+class LessonQuestionSerializer(serializers.ModelSerializer):
+    options = QuestionOptionSerializer(many=True,read_only=True)
+    
+    class Meta:
+        model = LessonQuestion
+        fields = ['timestamp','question_text','options','id']
+
+    def to_representation(self, instance):
+        # Transform data to frontend-friendly format
+        rep = super().to_representation(instance)
+        return {
+            "time": rep["timestamp"],
+            "question": rep["question_text"],
+            "options": [opt["option_text"] for opt in rep["options"]],
+            "answer": instance.options.filter(is_correct=True).first().option_text if instance.options.filter(is_correct=True).exists() else None,
+            "answered": False
+        }

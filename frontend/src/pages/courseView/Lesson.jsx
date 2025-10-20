@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import YouTube from "react-youtube";
 
-import { CircleCheckBig } from "lucide-react";
+import { CircleCheckBig, UserPen } from "lucide-react";
 
 import NavTabs from "../../components/NavTabs/NavTabs";
 import CourseOverview from './CourseOverview';
@@ -10,12 +10,15 @@ import CourseAssignments from './CourseAssignments';
 import Notes from './Notes';
 import Discussion from './Discussion';
 import Question from './question/Question';
+import { useParams } from "react-router-dom";
+import { usePrivateApi } from "../../hooks/usePrivateApi";
 
 const Lesson = () => {
     const [activeTab, setActiveTab] = useState(0);
     const [showQuestion, setShowQuestion] = useState(false);
     const [canProceed, setCanProceed] = useState(false);
     const [currentQuestion, setCurrentQuestion] = useState(null);
+    const [lessonDetails, setLessonDetails] = useState();
 
     const playerRef = useRef(null);
     const containerRef = useRef(null);
@@ -24,14 +27,14 @@ const Lesson = () => {
     const totalWatchedRef = useRef(0);
     const animationRef = useRef(null);
 
-    const [questions, setQuestions] = useState([
-        { time: 10, question: "What is 2 + 2?", options: ["3", "4", "5"], answer: "4", answered: false },
-        { time: 25, question: "Which planet is red?", options: ["Earth", "Mars", "Venus"], answer: "Mars", answered: false },
-    ]);
+    const { lessonSlug } = useParams();
+    const api = usePrivateApi();
+
+    const [questions, setQuestions] = useState();
 
     const questionMap = useMemo(() => {
         const map = new Map();
-        questions.forEach(q => map.set(q.time, q));
+        questions?.forEach(q => map.set(q.time, q));
         return map;
     }, [questions]);
 
@@ -97,6 +100,21 @@ const Lesson = () => {
         animationRef.current = requestAnimationFrame(trackProgress);
     };
 
+    //for getting lesson details
+    useEffect(() => {
+        const getLessonDetails = async () => {
+            try {
+                const response = await api.get(`course/lesson-details/${lessonSlug}/`);
+                setLessonDetails(response.data.lessonDetails);
+                setQuestions(response.data.lessonQuestions);
+            } catch (err) {
+                console.log(err);
+            }
+        };
+
+        getLessonDetails();
+    }, [lessonSlug]);
+
     useEffect(() => {
         return () => cancelAnimationFrame(animationRef.current);
     }, []);
@@ -122,19 +140,27 @@ const Lesson = () => {
     }, []);
 
 
+    if (!lessonDetails) return <div className="w-full h-full flex items-center justify-center"><h1 className="text-2xl">Loading...</h1></div>
+
+
     return (
         <div className="w-full lg:w-[75%] p-1 lg:p-5 lg:pr-0">
-            <div className="video-wrapper w-full aspect-video relative">
+            <div className="video-wrapper w-full aspect-video relative rounded-lg overflow-hidden">
                 <YouTube
-                    videoId="I7DZP4rVQOU"
+                    key={lessonDetails.video_id}
+                    videoId={lessonDetails.video_id}
                     opts={{
                         width: "100%",
                         height: "100%",
-                        playerVars: { autoplay: 0 }
+                        playerVars: {
+                            autoplay: 0,
+                            modestbranding: 1,
+                            rel: 0,
+                        }
                     }}
                     onReady={onReady}
                     onStateChange={onStateChange}
-                    className="absolute top-0 left-0 w-full h-full "
+                    className="absolute top-0 left-0 w-full h-full"
                 />
 
                 {
@@ -150,9 +176,9 @@ const Lesson = () => {
 
             </div>
             <div className='px-2'>
-                <div className="flex items-center justify-between flex-col sm:flex-row mt-5">
+                <div className="flex items-center justify-between flex-col sm:flex-row gap-2 mt-5">
                     <div className='w-full sm:w-auto'>
-                        <h3 className="font-semibold text-text-black sm:text-xl">Lesson 1 <span className="font-normal">|</span> Fundamentals of Linux</h3>
+                        <h3 className="font-semibold text-text-black sm:text-base lg:text-xl">{lessonDetails.title}</h3>
                         <p className="text-faded-text text-xs lg:text-sm">by teacher name here</p>
                     </div>
                     <button
@@ -170,10 +196,10 @@ const Lesson = () => {
             />
             <div className='px-5'>
                 {activeTab === 0 && (
-                    <CourseOverview />
+                    <CourseOverview about={lessonDetails.about} />
                 )}
                 {activeTab === 1 && (
-                    <CourseMaterials />
+                    <CourseMaterials lessonId={lessonDetails.id} />
                 )}
 
                 {activeTab === 2 && (

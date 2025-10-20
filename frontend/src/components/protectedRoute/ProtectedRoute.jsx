@@ -1,4 +1,4 @@
-import { Outlet, Navigate } from "react-router-dom";
+import { Outlet, Navigate, useLocation } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 
@@ -9,6 +9,8 @@ import { BASE_URL } from "../../config";
 const ProtectedRoute = ({ allowedRoles }) => {
     const { token, setToken, role } = useContext(AuthContext);
     const [isValid, setIsValid] = useState(null);
+
+    const location = useLocation();
 
     const userData = localStorage.getItem("userData");
     const userRole = userData ? JSON.parse(userData).role : null;
@@ -52,11 +54,11 @@ const ProtectedRoute = ({ allowedRoles }) => {
             }
         };
 
-        const userData = localStorage.getItem("userData");
-        if (!userData) {
-            setIsValid(false);
-            return;
-        }
+        // const userData = localStorage.getItem("userData");
+        // if (!userData) {
+        //     setIsValid(false);
+        //     return;
+        // }
 
         verifyToken();
 
@@ -67,10 +69,10 @@ const ProtectedRoute = ({ allowedRoles }) => {
     }
 
     if (!isValid) {
-        return <Navigate to="/login" replace />;
+        return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    if (allowedRoles && !allowedRoles.includes(userRole)) {
+    if (allowedRoles && !allowedRoles.includes(role)) {
         return <Navigate to="/" replace />;
     }
     return <Outlet />;

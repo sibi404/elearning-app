@@ -14,7 +14,6 @@ const NavTabs = ({ tabs, setActiveTab }) => {
     const handleTabSwitch = (index) => {
         const move = (100 / tabs.length) * index;
         // const move = width * index;
-        console.log(move);
         activeTabRef.current.style.left = move + "%";
         // activeTabRef.current.style.left = `${move}px`;
         // activeTabRef.current.style.width = `${width}px`;

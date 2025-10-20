@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+@import 'primereact/resources/themes/lara-light-blue/theme.css';
+@import 'primereact/resources/primereact.min.css';
+
 @theme {
   --color-primary: #0A2472;
   --color-primary-fade: #E4E8F7;
