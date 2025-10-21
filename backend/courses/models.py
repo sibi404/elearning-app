@@ -99,15 +99,8 @@ class StudentAnswer(models.Model):
 
     def save(self, *args, **kwargs):
         self.is_correct = self.selected_option.is_correct
-        
-        existing = StudentAnswer.objects.filter(student=self.student, question=self.question).first()
-        if existing:
-            existing.selected_option = self.selected_option
-            existing.is_correct = self.is_correct
-            existing.answered_at = timezone.now()
-            existing.save()
-        else:
-            super().save(*args, **kwargs)
+    
+        super().save(*args, **kwargs)
 
 
     class Meta:

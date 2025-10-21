@@ -1,8 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const Question = ({ question, setCurrentQuestion, setShowQuestion, setQuestions, playerRef }) => {
+import { usePrivateApi } from "../../../hooks/usePrivateApi";
+
+const Question = ({ question, setCurrentQuestion, setShowQuestion, setQuestions, playerRef, showError, showSuccess }) => {
     const [isWrong, setIsWrong] = useState(false);
+    const api = usePrivateApi();
 
     const handleCorrectAnswer = useCallback(() => {
         setQuestions(prev =>
@@ -13,9 +16,26 @@ const Question = ({ question, setCurrentQuestion, setShowQuestion, setQuestions,
         playerRef.current?.playVideo();
     }, [setQuestions, question.time, setCurrentQuestion, setShowQuestion, playerRef]);
 
-    const handleAnswer = useCallback((option) => {
-        if (option === question.answer) handleCorrectAnswer();
-        else setIsWrong(true);
+    const checkAnswer = async (option) => {
+        try {
+            const response = await api.post("course/add-answer/", {
+                questionId: question.id,
+                option: option
+            });
+            if (response.status === 201 && response.data.is_correct) {
+                handleCorrectAnswer();
+                return true;
+            } else return false;
+        } catch (err) {
+            console.log(err);
+            if (err.code === "ERR_NETWORK") showError();
+            return false;
+        }
+    };
+
+    const handleAnswer = useCallback(async (option) => {
+        const isCorrect = await checkAnswer(option);
+        isCorrect ? showSuccess() : setIsWrong(true);
     }, [handleCorrectAnswer, question.answer]);
 
     const handleRewatch = useCallback(() => {

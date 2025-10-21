@@ -1,11 +1,13 @@
-from django.shortcuts import get_object_or_404,get_list_or_404
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 
 from rest_framework import status
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,AllowAny
 
-from . models import Lesson,LessonMaterials,LessonQuestion
+from . models import Lesson,LessonMaterials,LessonQuestion,StudentAnswer,QuestionOption
+from authentication.models import Student
 from . serializers import LessonListSerializer,LessonSerializer,LessonMaterialSerializer,LessonQuestionSerializer
 
 # Create your views here.
@@ -28,7 +30,7 @@ def get_lesson_details(request,slug):
     questions = LessonQuestion.objects.filter(lesson=lesson)
     try:
         serializer = LessonSerializer(lesson)
-        question_serializer = LessonQuestionSerializer(questions,many=True)
+        question_serializer = LessonQuestionSerializer(questions,many=True,context={'request': request})
     except Exception as e:
         return Response({"error" : str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
@@ -45,3 +47,21 @@ def get_lesson_materials(request,lesson_id):
     except Exception as e:
         return Response({"error" : str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     return Response(serializer.data,status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_answer(request):
+    print(request.data)
+    question = get_object_or_404(LessonQuestion,id=request.data.get('questionId'))
+    option = get_object_or_404(QuestionOption,question=question,option_text=request.data.get('option'))
+    is_correct_value = option.is_correct
+    answer, created = StudentAnswer.objects.update_or_create(
+        student=request.user.student_profile,
+        question=question,
+        defaults={
+            'selected_option': option,
+            'is_correct': is_correct_value,
+        }
+    )
+    return Response({"Message" : "Success","is_correct" : answer.is_correct},status=status.HTTP_201_CREATED)
+

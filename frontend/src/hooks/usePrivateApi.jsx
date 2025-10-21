@@ -31,8 +31,13 @@ export const usePrivateApi = () => {
                     try {
                         const newAccess = await refreshToken();
                         setToken(newAccess);
-                        originalRequest.headers.Authorization = `Bearer ${newAccess}`;
-                        return instance(originalRequest);
+                        return axios({
+                            ...originalRequest,
+                            headers: {
+                                ...originalRequest.headers,
+                                Authorization: `Bearer ${newAccess}`,
+                            },
+                        });
                     } catch (err) {
                         // Refresh failed → logout
                         setToken(null);

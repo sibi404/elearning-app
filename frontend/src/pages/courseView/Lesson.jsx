@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import YouTube from "react-youtube";
+import { Toast } from "primereact/toast";
 
 import { CircleCheckBig, UserPen } from "lucide-react";
 
@@ -26,6 +27,7 @@ const Lesson = () => {
     const maxWatchedTimeRef = useRef(0);
     const totalWatchedRef = useRef(0);
     const animationRef = useRef(null);
+    const toast = useRef(null);
 
     const { lessonSlug } = useParams();
     const api = usePrivateApi();
@@ -41,6 +43,14 @@ const Lesson = () => {
     const onReady = (event) => {
         playerRef.current = event.target;
     };
+
+    const showError = () => {
+        toast.current.show({ severity: 'error', summary: 'Network Error', detail: 'Check your inernet connection', life: 3000 });
+    };
+
+    const showSuccess = () => {
+        toast.current.show({ severity: 'success', summary: 'Correct', detail: 'Answer saved', life: 3000 });
+    }
 
     const checkForQuestion = useCallback((second) => {
         const q = questionMap.get(second);
@@ -145,6 +155,7 @@ const Lesson = () => {
 
     return (
         <div className="w-full lg:w-[75%] p-1 lg:p-5 lg:pr-0">
+            <Toast ref={toast} />
             <div className="video-wrapper w-full aspect-video relative rounded-lg overflow-hidden">
                 <YouTube
                     key={lessonDetails.video_id}
@@ -171,6 +182,8 @@ const Lesson = () => {
                         setShowQuestion={setShowQuestion}
                         setQuestions={setQuestions}
                         playerRef={playerRef}
+                        showError={showError}
+                        showSuccess={showSuccess}
                     />
                 }
 

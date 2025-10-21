@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from . models import Course,Lesson,LessonMaterials,LessonQuestion,QuestionOption
+from . models import Course,Lesson,LessonMaterials,LessonQuestion,QuestionOption,StudentAnswer
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -51,12 +51,19 @@ class LessonQuestionSerializer(serializers.ModelSerializer):
         fields = ['timestamp','question_text','options','id']
 
     def to_representation(self, instance):
-        # Transform data to frontend-friendly format
         rep = super().to_representation(instance)
+
+        request = self.context.get('request')
+        student = request.user.student_profile
+        answered = False
+        if student:
+            answered = StudentAnswer.objects.filter(student=student,question=instance,is_correct=True).exists()
+            
         return {
             "time": rep["timestamp"],
+            "id" : rep["id"],
             "question": rep["question_text"],
             "options": [opt["option_text"] for opt in rep["options"]],
             "answer": instance.options.filter(is_correct=True).first().option_text if instance.options.filter(is_correct=True).exists() else None,
-            "answered": False
+            "answered": answered
         }
