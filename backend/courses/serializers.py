@@ -41,7 +41,7 @@ class LessonMaterialSerializer(serializers.ModelSerializer):
 class QuestionOptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuestionOption
-        fields = ['option_text']
+        fields = ['id','option_text']
 
 class LessonQuestionSerializer(serializers.ModelSerializer):
     options = QuestionOptionSerializer(many=True,read_only=True)
@@ -63,7 +63,15 @@ class LessonQuestionSerializer(serializers.ModelSerializer):
             "time": rep["timestamp"],
             "id" : rep["id"],
             "question": rep["question_text"],
-            "options": [opt["option_text"] for opt in rep["options"]],
+            "options": [
+                {"id": opt["id"], "option_text": opt["option_text"]}
+                for opt in rep["options"]
+            ],
             "answer": instance.options.filter(is_correct=True).first().option_text if instance.options.filter(is_correct=True).exists() else None,
             "answered": answered
         }
+    
+
+class StudentAnswerSerializer(serializers.Serializer):
+    questionId = serializers.IntegerField()
+    optionId = serializers.IntegerField()

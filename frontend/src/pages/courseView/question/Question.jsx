@@ -3,7 +3,15 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { usePrivateApi } from "../../../hooks/usePrivateApi";
 
-const Question = ({ question, setCurrentQuestion, setShowQuestion, setQuestions, playerRef, showError, showSuccess }) => {
+const Question = ({ question,
+    setCurrentQuestion,
+    setShowQuestion,
+    setQuestions,
+    playerRef,
+    showNetworkError,
+    showError,
+    showSuccess }) => {
+
     const [isWrong, setIsWrong] = useState(false);
     const api = usePrivateApi();
 
@@ -20,22 +28,26 @@ const Question = ({ question, setCurrentQuestion, setShowQuestion, setQuestions,
         try {
             const response = await api.post("course/add-answer/", {
                 questionId: question.id,
-                option: option
+                optionId: option.id
             });
             if (response.status === 201 && response.data.is_correct) {
                 handleCorrectAnswer();
                 return true;
-            } else return false;
+            } else if (response.status == 201 && response.data.is_correct === false) { setIsWrong(true); } else return false;
         } catch (err) {
-            console.log(err);
-            if (err.code === "ERR_NETWORK") showError();
+            if (err.code === "ERR_NETWORK") {
+                showNetworkError()
+            } else {
+                showError();
+                setShowQuestion(false)
+            };
             return false;
         }
     };
 
     const handleAnswer = useCallback(async (option) => {
         const isCorrect = await checkAnswer(option);
-        isCorrect ? showSuccess() : setIsWrong(true);
+        if (isCorrect) showSuccess();
     }, [handleCorrectAnswer, question.answer]);
 
     const handleRewatch = useCallback(() => {
@@ -82,13 +94,13 @@ const Question = ({ question, setCurrentQuestion, setShowQuestion, setQuestions,
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {question.options.map((option) => (
                                     <button
-                                        key={option}
+                                        key={option.id}
                                         onClick={() => handleAnswer(option)}
                                         className="py-1 md:py-3 px-5 border border-gray-300  rounded-xl text-gray-700
                                bg-white/70 hover:bg-blue-100
                                transition-all duration-200 font-medium shadow-sm hover:shadow-md text-xs md:text-base"
                                     >
-                                        {option}
+                                        {option.option_text}
                                     </button>
                                 ))}
                             </div>

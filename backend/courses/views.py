@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated,AllowAny
 
 from . models import Lesson,LessonMaterials,LessonQuestion,StudentAnswer,QuestionOption
 from authentication.models import Student
-from . serializers import LessonListSerializer,LessonSerializer,LessonMaterialSerializer,LessonQuestionSerializer
+from . serializers import LessonListSerializer,LessonSerializer,LessonMaterialSerializer,LessonQuestionSerializer,StudentAnswerSerializer
 
 # Create your views here.
 
@@ -52,12 +52,28 @@ def get_lesson_materials(request,lesson_id):
 @permission_classes([IsAuthenticated])
 def add_answer(request):
     print(request.data)
-    question = get_object_or_404(LessonQuestion,id=request.data.get('questionId'))
-    option = get_object_or_404(QuestionOption,question=question,option_text=request.data.get('option'))
+    serializer = StudentAnswerSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    
+    validated_data = serializer.validated_data
+    question_id = validated_data['questionId']
+    option_id = validated_data['optionId']
+
+    try:
+        option = QuestionOption.objects.select_related('question').get(
+            id = option_id,
+            question_id = question_id
+        )
+    except QuestionOption.DoesNotExist:
+        return Response(
+            {"details" : "Question or Option not found, or Option does not belong to Question."},
+            status=status.HTTP_404_NOT_FOUND)
+    
     is_correct_value = option.is_correct
     answer, created = StudentAnswer.objects.update_or_create(
         student=request.user.student_profile,
-        question=question,
+        question=option.question,
         defaults={
             'selected_option': option,
             'is_correct': is_correct_value,

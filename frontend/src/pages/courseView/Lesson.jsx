@@ -44,12 +44,16 @@ const Lesson = () => {
         playerRef.current = event.target;
     };
 
-    const showError = () => {
+    const showNetworkError = () => {
         toast.current.show({ severity: 'error', summary: 'Network Error', detail: 'Check your inernet connection', life: 3000 });
     };
 
     const showSuccess = () => {
         toast.current.show({ severity: 'success', summary: 'Correct', detail: 'Answer saved', life: 3000 });
+    }
+
+    const showError = () => {
+        toast.current.show({ severity: 'error', summary: 'Error', detail: 'Something went wrong', life: 3000 });
     }
 
     const checkForQuestion = useCallback((second) => {
@@ -102,7 +106,6 @@ const Lesson = () => {
 
         // Calculate progress and update state for the UI
         const watchedPercent = (Math.min(totalWatchedRef.current, duration) / duration) * 100;
-        // console.log("Watched:", watchedPercent.toFixed(2) + "%");
 
         if (watchedPercent >= 90 && !canProceed) {
             setCanProceed(true);
@@ -182,6 +185,7 @@ const Lesson = () => {
                         setShowQuestion={setShowQuestion}
                         setQuestions={setQuestions}
                         playerRef={playerRef}
+                        showNetworkError={showNetworkError}
                         showError={showError}
                         showSuccess={showSuccess}
                     />
