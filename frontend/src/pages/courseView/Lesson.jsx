@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import YouTube from "react-youtube";
 import { Toast } from "primereact/toast";
+import { ClipboardList, BookText, MessagesSquare, NotebookPen, BrainCircuit } from "lucide-react";
 
 import { CircleCheckBig, UserPen } from "lucide-react";
 
@@ -209,6 +210,7 @@ const Lesson = () => {
 
             <NavTabs
                 tabs={["Overview", "Materials", "Assignments", "Notes", "Discussion"]}
+                icons={[ClipboardList, BookText, MessagesSquare, NotebookPen, BrainCircuit]}
                 setActiveTab={setActiveTab}
             />
             <div className='px-5'>

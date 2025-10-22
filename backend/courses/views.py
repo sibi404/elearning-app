@@ -1,13 +1,12 @@
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
+from django.http import FileResponse,Http404
 
 from rest_framework import status
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework.permissions import IsAuthenticated
 
 from . models import Lesson,LessonMaterials,LessonQuestion,StudentAnswer,QuestionOption
-from authentication.models import Student
 from . serializers import LessonListSerializer,LessonSerializer,LessonMaterialSerializer,LessonQuestionSerializer,StudentAnswerSerializer
 
 # Create your views here.
@@ -34,7 +33,6 @@ def get_lesson_details(request,slug):
     except Exception as e:
         return Response({"error" : str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-    print(question_serializer.data)
     return Response({'lessonDetails' : serializer.data,'lessonQuestions' : question_serializer.data},status=status.HTTP_200_OK)
 
 @api_view(['GET'])
@@ -51,7 +49,6 @@ def get_lesson_materials(request,lesson_id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_answer(request):
-    print(request.data)
     serializer = StudentAnswerSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
@@ -81,3 +78,10 @@ def add_answer(request):
     )
     return Response({"Message" : "Success","is_correct" : answer.is_correct},status=status.HTTP_201_CREATED)
 
+def download_material(request,pk):
+    try:
+        material = LessonMaterials.objects.get(pk=pk)
+        response = FileResponse(material.file.open('rb'),as_attachment=True,filename=material.title)
+        return response
+    except LessonMaterials.DoesNotExist:
+        raise Http404("Material not found")

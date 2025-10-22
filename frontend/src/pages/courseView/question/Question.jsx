@@ -87,7 +87,7 @@ const Question = ({ question,
                         </>
                     ) : (
                         <>
-                            <p className="text-sm md:text-lg font-medium text-gray-700 mb-3 md:mb-6">
+                            <p className="text-xs sm:text-sm md:text-lg font-medium text-gray-700 mb-3 md:mb-6">
                                 {question.question}
                             </p>
 

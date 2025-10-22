@@ -31,7 +31,7 @@ class LessonMaterialSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LessonMaterials
-        fields = ['id','title','material_type','size']
+        fields = ['id','title','material_type','size','file']
     
     def get_size(self,obj):
         if obj.file:

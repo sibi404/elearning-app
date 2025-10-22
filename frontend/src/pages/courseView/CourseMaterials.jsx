@@ -6,6 +6,7 @@ import Error from "../../components/error/Error";
 
 import { usePrivateApi } from "../../hooks/usePrivateApi";
 import { formatBytes } from "../../utils/course/formatSize";
+import { BASE_URL } from "../../config";
 
 const CourseMaterials = ({ lessonId }) => {
     const [materials, setMaterials] = useState([]);
@@ -15,9 +16,10 @@ const CourseMaterials = ({ lessonId }) => {
     const api = usePrivateApi();
 
     const getLessonMaterials = useCallback(async () => {
+        setError(null);
         try {
-            const respone = await api.get(`course/get-lesson-materials/${lessonId}`);
-            setMaterials(respone.data);
+            const { data } = await api.get(`course/get-lesson-materials/${lessonId}`);
+            setMaterials(data);
         } catch (err) {
             console.log(err);
             setError("Could not load course materials.");
@@ -35,10 +37,10 @@ const CourseMaterials = ({ lessonId }) => {
         <div>
             <SectionTitle title="Course Materials" />
             <div>
-                {isLoading && <p className="text-center">Loading materials...</p>}
+                {isLoading && <MaterialSkelton />}
                 {error && <Error message={error} />}
                 {!isLoading && !error && materials.length === 0 && (
-                    <p className="text-center text-faded-text">No materials available.</p>
+                    <NoMaterialsFound />
                 )}
                 {
                     materials.map((material) => (
@@ -47,6 +49,7 @@ const CourseMaterials = ({ lessonId }) => {
                             title={material.title}
                             type={material.material_type.toUpperCase()}
                             size={formatBytes(material.size)}
+                            materialId={material.id}
                         />
                     ))
                 }
@@ -57,7 +60,7 @@ const CourseMaterials = ({ lessonId }) => {
 
 export default CourseMaterials;
 
-const MaterialCard = memo(({ title, type, size }) => {
+const MaterialCard = memo(({ title, type, size, materialId }) => {
     return (
         <div className="material-card container-border px-4 py-2 mt-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -67,9 +70,42 @@ const MaterialCard = memo(({ title, type, size }) => {
                     <p className="text-faded-text text-xs md:text-sm">{type} <span className="font-bold">.</span> {size}</p>
                 </div>
             </div>
-            <button className="container-border p-2 md:p-3 cursor-pointer hover:bg-primary hover:border-transparent group" title="Download">
-                <Download className="group-hover:text-white w-5 h-5 md:w-auto md:h-auto" />
-            </button>
+            <a href={`${BASE_URL}/course/download-material/${materialId}/`} download>
+                <button className="container-border p-2 md:p-3 cursor-pointer hover:bg-primary hover:border-transparent group" title="Download">
+                    <Download className="group-hover:text-white w-5 h-5 md:w-auto md:h-auto" />
+                </button>
+            </a>
         </div>
     );
 });
+
+const MaterialSkeltonItem = () => {
+    return (
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="h-2.5 bg-gray-300 rounded-full  w-24 mb-2.5"></div>
+                <div class="w-32 h-2 bg-gray-200 rounded-full "></div>
+            </div>
+            <div class="h-2.5 bg-gray-300 rounded-full  w-12"></div>
+        </div>
+    );
+};
+
+const MaterialSkelton = () => {
+    return (
+        <div role="status" class="w-full p-4 space-y-4  divide-y divide-gray-200 rounded-sm shadow-sm animate-pulse md:p-6">
+            <MaterialSkeltonItem />
+            <MaterialSkeltonItem />
+            <MaterialSkeltonItem />
+            <MaterialSkeltonItem />
+        </div>
+    )
+}
+
+const NoMaterialsFound = () => {
+    return (
+        <div className="min-h-28 flex items-center justify-center">
+            <p className="text-center text-faded-text">No materials available.</p>
+        </div>
+    );
+};

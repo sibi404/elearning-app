@@ -86,7 +86,7 @@ const StudentDashboard = () => {
 
 
     return (
-        <div className="flex h-screen xl:bg-primary xl:p-2">
+        <div className="flex h-screen xl:bg-primary">
             <SidePanel sidePanel={sidePanel} setSidePanel={setSidePanel} navigation={navigation} quickAccess={quickAccess} dashboardLink="/student" />
 
             <main className="flex-1 overflow-y-scroll xl:m-2 xl:rounded-2xl  bg-[#F9FAFB]">
