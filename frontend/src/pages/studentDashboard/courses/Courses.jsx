@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 
 import './courses.css';
@@ -8,14 +8,48 @@ import EmptyMessage from '../emptyMessage/EmptyMessage';
 
 const Courses = () => {
     const [activeIndex, setActiveIndex] = useState(0);
-    const links = ["All", "Active", "Completed"]
+    const FILTERS = ["All", "Active", "Completed"]
     const { enrolledCourses } = useOutletContext();
+
+    const filteredCourses = useMemo(() => {
+        switch (FILTERS[activeIndex]) {
+            case "Active":
+                return enrolledCourses.filter((course) => !course.completed);
+            case "Completed":
+                return enrolledCourses.filter((course) => course.completed === true);
+            default:
+                return enrolledCourses;
+        };
+    }, [activeIndex, enrolledCourses]);
+
+    const getEmptyMessage = () => {
+        switch (FILTERS[activeIndex]) {
+            case "Active":
+                return {
+                    title: "No Active courses found",
+                    description: "Looks like you haven't started any courses yet."
+                }
+            case "Completed":
+                return {
+                    title: "No completed courses yet",
+                    description: "Finish some courses to see them listed here."
+                };
+            default:
+                return {
+                    title: "No courses available",
+                    description: "Enroll in a course to get started with your learning journey."
+                }
+        };
+    };
+
+    const { title, description } = getEmptyMessage();
+
     return (
         <div className="p-2 m-5 bg-white">
             <h2 className="font-bold text-2xl">My Courses</h2>
             <ul className="course-nav flex items-center justify-start gap-10 mt-4 text-xs sm:text-sm text-faded-text">
                 {
-                    links.map((link, index) => (
+                    FILTERS.map((link, index) => (
                         <li
                             key={index}
                             className={`${activeIndex === index && "active"} cursor-pointer`}
@@ -25,10 +59,10 @@ const Courses = () => {
                 }
             </ul>
             {
-                enrolledCourses.length ?
+                filteredCourses.length > 0 ?
                     <div className='flex flex-wrap items-stretch gap-3 mt-3 h-[55vh] overflow-y-scroll'>
                         {
-                            enrolledCourses.map((course) => (
+                            filteredCourses.map((course) => (
                                 <CourseCard
                                     key={course.id}
                                     title={course.title}
@@ -43,7 +77,7 @@ const Courses = () => {
                         }
                     </div>
                     :
-                    <EmptyMessage />
+                    <EmptyMessage title={title} description={description} />
             }
         </div>
     );

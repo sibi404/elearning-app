@@ -61,7 +61,7 @@ const Dashboard = () => {
                                 }
                             </div>
                             :
-                            <EmptyMessage />
+                            <EmptyMessage title={"You haven’t enrolled in any courses yet."} description={"Browse available courses and start learning today!"} />
                     }
                 </div>
             </main>
