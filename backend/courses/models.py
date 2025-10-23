@@ -31,16 +31,10 @@ class Lesson(models.Model):
     video_id = models.CharField(max_length=20)
     order = models.PositiveIntegerField(default=0)
     about = models.TextField(null=True)
-    progress = models.DecimalField(max_digits=5,decimal_places=1,default=0.0)
-    completed = models.BooleanField(default=False)
     slug = models.SlugField(default="",null=False,unique=True)
 
     class Meta:
         ordering = ['order']
-
-    def clean(self):
-        if self.completed and self.progress < 90:
-            raise ValidationError("Cannot mark as complete unless progress is 90 or above.")
     
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -51,6 +45,32 @@ class Lesson(models.Model):
     
     def __str__(self):
         return f"{self.course.title} - {self.title} : {self.order}"
+    
+class LessonProgress(models.Model):
+    student = models.ForeignKey('authentication.Student',on_delete=models.CASCADE,related_name='lesson_progress')
+    lesson = models.ForeignKey('courses.Lesson',on_delete=models.CASCADE,related_name='progress_records')
+    progress = models.DecimalField(max_digits=5,decimal_places=1,default=0.0)
+    completed = models.BooleanField(default=False)
+    last_watched = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('student','lesson')
+
+    
+    def clean(self):
+        if self.completed and self.progress < 90:
+            raise ValidationError("Cannot mark as complete unless progress is 90 or above.")
+
+
+    def save(self, *args, **kwargs):
+        if self.progress >= 90:
+            self.completed = True
+        else:
+            self.completed = False
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"{self.student.user.username} - {self.lesson.title} : {self.progress}s"
     
 
 class LessonMaterials(models.Model):

@@ -1,9 +1,8 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import YouTube from "react-youtube";
 import { Toast } from "primereact/toast";
-import { ClipboardList, BookText, MessagesSquare, NotebookPen, BrainCircuit } from "lucide-react";
-
-import { CircleCheckBig, UserPen } from "lucide-react";
+import { ClipboardList, BookText, MessagesSquare, NotebookPen, BrainCircuit, CircleCheckBig } from "lucide-react";
 
 import NavTabs from "../../components/NavTabs/NavTabs";
 import CourseOverview from './CourseOverview';
@@ -12,8 +11,9 @@ import CourseAssignments from './CourseAssignments';
 import Notes from './Notes';
 import Discussion from './Discussion';
 import Question from './question/Question';
-import { useParams } from "react-router-dom";
+
 import { usePrivateApi } from "../../hooks/usePrivateApi";
+import { showNetworkError } from "../../utils/toast/toastFunctions";
 
 const Lesson = () => {
     const [activeTab, setActiveTab] = useState(0);
@@ -23,11 +23,13 @@ const Lesson = () => {
     const [lessonDetails, setLessonDetails] = useState();
 
     const playerRef = useRef(null);
-    const containerRef = useRef(null);
     const lastTimeRef = useRef(0);
     const maxWatchedTimeRef = useRef(0);
     const totalWatchedRef = useRef(0);
     const animationRef = useRef(null);
+    const watchedPercentRef = useRef(0);
+    const lastSentPercentRef = useRef(0);
+    const playerReadyRef = useRef(false);
     const toast = useRef(null);
 
     const { lessonSlug } = useParams();
@@ -41,21 +43,41 @@ const Lesson = () => {
         return map;
     }, [questions]);
 
+
+    const updateProgress = async () => {
+        if (!lessonDetails?.id) return false;
+        try {
+            const response = await api.post(`course/update-progress/${lessonDetails.id}/`, {
+                time: maxWatchedTimeRef.current.toFixed(1)
+            });
+            console.log(response.data.message);
+            return true;
+        } catch (err) {
+            console.log(err);
+            if (err.request && !err.response) {
+                showNetworkError(toast);
+            }
+            return false;
+        }
+    };
+
+    const seekToLastWatched = () => {
+        if (!playerRef.current || !playerReadyRef.current || !lessonDetails?.progress?.time) return;
+
+        const startTime = lessonDetails.progress.time;
+        const duration = playerRef.current.getDuration();
+
+        if (startTime > 0 && startTime < duration - 5) {
+            playerRef.current.seekTo(startTime, true);
+        }
+    };
+
     const onReady = (event) => {
         playerRef.current = event.target;
+        playerReadyRef.current = true;
+        seekToLastWatched();
+
     };
-
-    const showNetworkError = () => {
-        toast.current.show({ severity: 'error', summary: 'Network Error', detail: 'Check your inernet connection', life: 3000 });
-    };
-
-    const showSuccess = () => {
-        toast.current.show({ severity: 'success', summary: 'Correct', detail: 'Answer saved', life: 3000 });
-    }
-
-    const showError = () => {
-        toast.current.show({ severity: 'error', summary: 'Error', detail: 'Something went wrong', life: 3000 });
-    }
 
     const checkForQuestion = useCallback((second) => {
         const q = questionMap.get(second);
@@ -106,9 +128,17 @@ const Lesson = () => {
         lastTimeRef.current = current;
 
         // Calculate progress and update state for the UI
-        const watchedPercent = (Math.min(totalWatchedRef.current, duration) / duration) * 100;
+        watchedPercentRef.current = (Math.min(totalWatchedRef.current, duration) / duration) * 100;
 
-        if (watchedPercent >= 90 && !canProceed) {
+        if (watchedPercentRef.current - lastSentPercentRef.current >= 5 ||
+            watchedPercentRef.current >= 95) {
+
+            updateProgress();
+            lastSentPercentRef.current = watchedPercentRef.current;
+        }
+
+
+        if (watchedPercentRef >= 90 && !canProceed) {
             setCanProceed(true);
         }
         animationRef.current = requestAnimationFrame(trackProgress);
@@ -121,6 +151,9 @@ const Lesson = () => {
                 const response = await api.get(`course/lesson-details/${lessonSlug}/`);
                 setLessonDetails(response.data.lessonDetails);
                 setQuestions(response.data.lessonQuestions);
+                const progress = response.data.lessonDetails.progress?.time || 0;
+                maxWatchedTimeRef.current = progress;
+                totalWatchedRef.current = progress;
             } catch (err) {
                 console.log(err);
             }
@@ -128,6 +161,12 @@ const Lesson = () => {
 
         getLessonDetails();
     }, [lessonSlug]);
+
+    useEffect(() => {
+        if (playerReadyRef.current && lessonDetails?.progress?.time) {
+            seekToLastWatched();
+        }
+    }, [lessonDetails]);
 
     useEffect(() => {
         return () => cancelAnimationFrame(animationRef.current);
@@ -186,9 +225,7 @@ const Lesson = () => {
                         setShowQuestion={setShowQuestion}
                         setQuestions={setQuestions}
                         playerRef={playerRef}
-                        showNetworkError={showNetworkError}
-                        showError={showError}
-                        showSuccess={showSuccess}
+                        toast={toast}
                     />
                 }
 

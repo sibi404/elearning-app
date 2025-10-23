@@ -2,15 +2,14 @@ import { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { usePrivateApi } from "../../../hooks/usePrivateApi";
+import { showNetworkError, showError, showSuccess } from "../../../utils/toast/toastFunctions";
 
 const Question = ({ question,
     setCurrentQuestion,
     setShowQuestion,
     setQuestions,
     playerRef,
-    showNetworkError,
-    showError,
-    showSuccess }) => {
+    toast }) => {
 
     const [isWrong, setIsWrong] = useState(false);
     const api = usePrivateApi();
@@ -36,9 +35,9 @@ const Question = ({ question,
             } else if (response.status == 201 && response.data.is_correct === false) { setIsWrong(true); } else return false;
         } catch (err) {
             if (err.code === "ERR_NETWORK") {
-                showNetworkError()
+                showNetworkError(toast)
             } else {
-                showError();
+                showError(toast);
                 setShowQuestion(false)
             };
             return false;
@@ -47,7 +46,7 @@ const Question = ({ question,
 
     const handleAnswer = useCallback(async (option) => {
         const isCorrect = await checkAnswer(option);
-        if (isCorrect) showSuccess();
+        if (isCorrect) showSuccess(toast, "Answer saved");
     }, [handleCorrectAnswer, question.answer]);
 
     const handleRewatch = useCallback(() => {

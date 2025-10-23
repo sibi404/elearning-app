@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from . models import Course,Lesson,LessonMaterials,LessonQuestion,QuestionOption,StudentAnswer
+from . models import Course,Lesson,LessonMaterials,LessonQuestion,QuestionOption,StudentAnswer,LessonProgress
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -13,18 +13,37 @@ class CourseSerializer(serializers.ModelSerializer):
     
     def get_total_students(self,obj):
         return obj.students.count()
-    
+
  
 class LessonListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
-        fields = ['id','title','completed','slug']
+        fields = ['id','title','slug']
 
 
 class LessonSerializer(serializers.ModelSerializer):
+    progress = serializers.SerializerMethodField()
     class Meta:
         model = Lesson
-        fields = '__all__'
+        fields = ['id','course','title','video_id','order','about','slug','progress']
+
+    def get_progress(self,obj):
+        request = self.context.get('request')
+        if not request or not hasattr(request.user,'student_profile'):
+            return None
+        
+        student = request.user.student_profile
+        progress = LessonProgress.objects.filter(student=student,lesson=obj).first()
+
+        if progress:
+            return {
+                "time" : float(progress.progress),
+                "completed" : progress.completed,
+            }
+        return {
+            "time" : 0.0,
+            "completed" : False
+        }
 
 class LessonMaterialSerializer(serializers.ModelSerializer):
     size = serializers.SerializerMethodField()

@@ -1,12 +1,13 @@
 from django.shortcuts import get_object_or_404
 from django.http import FileResponse,Http404
+from django.db import transaction
 
 from rest_framework import status
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from . models import Lesson,LessonMaterials,LessonQuestion,StudentAnswer,QuestionOption
+from . models import Lesson,LessonMaterials,LessonQuestion,StudentAnswer,QuestionOption,LessonProgress
 from . serializers import LessonListSerializer,LessonSerializer,LessonMaterialSerializer,LessonQuestionSerializer,StudentAnswerSerializer
 
 # Create your views here.
@@ -28,7 +29,7 @@ def get_lesson_details(request,slug):
     lesson = get_object_or_404(Lesson,slug=slug)
     questions = LessonQuestion.objects.filter(lesson=lesson)
     try:
-        serializer = LessonSerializer(lesson)
+        serializer = LessonSerializer(lesson,context={'request': request})
         question_serializer = LessonQuestionSerializer(questions,many=True,context={'request': request})
     except Exception as e:
         return Response({"error" : str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -85,3 +86,51 @@ def download_material(request,pk):
         return response
     except LessonMaterials.DoesNotExist:
         raise Http404("Material not found")
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_lesson_progress(request,lesson_id):
+    try:
+        student = getattr(request.user,'student_profile',None)
+        if not student:
+            return Response(
+                {"error" : "User is not a student"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        time_str = request.data.get('time')
+        if time_str is None:
+            return Response(
+                {"error" : "Missing time in request body"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            time = float(time_str)
+        except (TypeError,ValueError):
+            return Response(
+                {"error" : "time must be a valid number"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        with transaction.atomic():
+            progress,created = LessonProgress.objects.get_or_create(
+                student = student,
+                lesson_id = lesson_id,
+                defaults = {'progress' : time}
+            )
+
+            if not created and time > progress.progress:
+                progress.progress = time
+                progress.save(update_fields=['progress'])
+
+        return Response(
+            {"message" : "Progress saved succesfully"},
+            status=status.HTTP_200_OK
+        )
+    
+    except Exception as e:
+        return Response(
+            {'error' : f"An unexpected error occured : {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
