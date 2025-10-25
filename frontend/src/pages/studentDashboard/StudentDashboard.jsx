@@ -61,7 +61,6 @@ const StudentDashboard = () => {
                     ...enrollment.course,
                     progress: enrollment.progress,
                     completed: enrollment.completed,
-                    lastViewed: enrollment.last_viewed_lesson,
                 }));
                 setEnrolledCourses(courses);
                 setCompletedCount(completed_count);

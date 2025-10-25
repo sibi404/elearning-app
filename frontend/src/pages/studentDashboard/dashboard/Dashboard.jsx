@@ -8,16 +8,12 @@ import CourseCard from '../../../components/courseCard/CourseCard';
 import DeadlineCard from '../../../components/deadlineCard/DeadlineCard';
 import EmptyMessage from '../emptyMessage/EmptyMessage';
 
-import { usePrivateApi } from '../../../hooks/usePrivateApi';
-
 import { BookOpen, MessageSquare, CircleAlert } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
-import { useEffect } from 'react';
 
 
 
 const Dashboard = () => {
-    const api = usePrivateApi();
     const { enrolledCourses, completedCount } = useOutletContext();
     const overallProgress = enrolledCourses.length > 0
         ? (enrolledCourses.reduce((acc, course) => acc + parseFloat(course.progress), 0) / enrolledCourses.length)

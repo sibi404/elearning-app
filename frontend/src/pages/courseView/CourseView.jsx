@@ -1,6 +1,6 @@
 import './courseView.css';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { ChevronLeft, Download, MessageSquare, Star } from "lucide-react";
 
@@ -23,10 +23,34 @@ const CourseView = () => {
     const { courseSlug } = useParams();
     const { enrolledCourses } = useOutletContext();
 
-    useEffect(() => {
-        setCourse(enrolledCourses?.find((c) => c.slug === courseSlug));
-    }, [enrolledCourses, courseSlug]);
+    const getLastViewedLesson = useCallback(async (courseId) => {
+        try {
+            const { data } = await api.get(`enrollment/get-lastviewed-lesson/${courseId}/`);
+            if (data) {
+                return data;
+            } else {
+                return null;
+            }
 
+        } catch (err) {
+            console.log(err);
+            return null;
+        }
+    }, [api])
+
+    // for getting course details
+    useEffect(() => {
+        const getCourse = async () => {
+            const course = enrolledCourses?.find((c) => c.slug === courseSlug);
+            if (!course) return;
+            const lastViewed = await getLastViewedLesson(course.id);
+            setCourse({ ...course, lastViewed: lastViewed });
+        };
+
+        getCourse();
+    }, [enrolledCourses, courseSlug, getLastViewedLesson]);
+
+    // for getting lesson details
     useEffect(() => {
         const getLessons = async (retries = 2, delay = 500) => {
             try {

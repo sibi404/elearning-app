@@ -5,10 +5,9 @@ from courses.serializers import CourseSerializer,LessonListSerializer
 
 class EnrollmentSerializer(serializers.ModelSerializer):
     course = CourseSerializer()
-    last_viewed_lesson = LessonListSerializer()
     class Meta:
         model = Enrollment
-        fields = ['course','progress','completed','enrolled_on','last_viewed_lesson']
+        fields = ['course','progress','completed','enrolled_on']
     
     def validate_progress(self,value):
         if value < 0:

@@ -50,6 +50,7 @@ class LessonProgress(models.Model):
     student = models.ForeignKey('authentication.Student',on_delete=models.CASCADE,related_name='lesson_progress')
     lesson = models.ForeignKey('courses.Lesson',on_delete=models.CASCADE,related_name='progress_records')
     progress = models.DecimalField(max_digits=5,decimal_places=1,default=0.0)
+    percentage = models.DecimalField(max_digits=4,decimal_places=1,default=0.0)
     completed = models.BooleanField(default=False)
     last_watched = models.DateTimeField(auto_now=True)
 
@@ -58,19 +59,19 @@ class LessonProgress(models.Model):
 
     
     def clean(self):
-        if self.completed and self.progress < 90:
+        if self.completed and self.percentage < 90:
             raise ValidationError("Cannot mark as complete unless progress is 90 or above.")
 
 
     def save(self, *args, **kwargs):
-        if self.progress >= 90:
+        if self.percentage >= 90:
             self.completed = True
         else:
             self.completed = False
         super().save(*args, **kwargs)
     
     def __str__(self):
-        return f"{self.student.user.username} - {self.lesson.title} : {self.progress}s"
+        return f"{self.student.user.username} - {self.lesson.title} : {self.progress}s , {self.percentage}%"
     
 
 class LessonMaterials(models.Model):

@@ -19,7 +19,7 @@ def get_lessons(request,course_id):
 
     if not lessons.exists():
         return Response({"Message" : "No lesson found for this course"},status=status.HTTP_404_NOT_FOUND)
-    serializer = LessonListSerializer(lessons,many=True)
+    serializer = LessonListSerializer(lessons,many=True,context={'request' : request})
 
     return Response(serializer.data,status=status.HTTP_200_OK)
 
@@ -105,11 +105,19 @@ def update_lesson_progress(request,lesson_id):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+        percentage_str = request.data.get('percentage')
+        if percentage_str is None:
+            return Response(
+                {'error' : 'Missing percentage in request body'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         try:
             time = float(time_str)
+            percentage = float(percentage_str)
         except (TypeError,ValueError):
             return Response(
-                {"error" : "time must be a valid number"},
+                {"error" : "time or percentage is not a valid number"},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -117,12 +125,13 @@ def update_lesson_progress(request,lesson_id):
             progress,created = LessonProgress.objects.get_or_create(
                 student = student,
                 lesson_id = lesson_id,
-                defaults = {'progress' : time}
+                defaults = {'progress' : time,'percentage' : percentage}
             )
 
             if not created and time > progress.progress:
                 progress.progress = time
-                progress.save(update_fields=['progress'])
+                progress.percentage = percentage if percentage < 97 else 100.0
+                progress.save(update_fields=['progress','percentage','completed'])
 
         return Response(
             {"message" : "Progress saved succesfully"},

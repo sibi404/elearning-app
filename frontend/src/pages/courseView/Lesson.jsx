@@ -29,6 +29,7 @@ const Lesson = () => {
     const animationRef = useRef(null);
     const watchedPercentRef = useRef(0);
     const lastSentPercentRef = useRef(0);
+    const lastSentTimeRef = useRef(0);
     const playerReadyRef = useRef(false);
     const toast = useRef(null);
 
@@ -48,7 +49,8 @@ const Lesson = () => {
         if (!lessonDetails?.id) return false;
         try {
             const response = await api.post(`course/update-progress/${lessonDetails.id}/`, {
-                time: maxWatchedTimeRef.current.toFixed(1)
+                time: watchedPercentRef.current >= 98 ? playerRef.current.getDuration() : maxWatchedTimeRef.current.toFixed(1),
+                percentage: watchedPercentRef.current.toFixed(1)
             });
             console.log(response.data.message);
             return true;
@@ -66,6 +68,7 @@ const Lesson = () => {
 
         const startTime = lessonDetails.progress.time;
         const duration = playerRef.current.getDuration();
+        if (!duration || duration <= 0) return;
 
         if (startTime > 0 && startTime < duration - 5) {
             playerRef.current.seekTo(startTime, true);
@@ -76,7 +79,6 @@ const Lesson = () => {
         playerRef.current = event.target;
         playerReadyRef.current = true;
         seekToLastWatched();
-
     };
 
     const checkForQuestion = useCallback((second) => {
@@ -130,13 +132,12 @@ const Lesson = () => {
         // Calculate progress and update state for the UI
         watchedPercentRef.current = (Math.min(totalWatchedRef.current, duration) / duration) * 100;
 
-        if (watchedPercentRef.current - lastSentPercentRef.current >= 5 ||
-            watchedPercentRef.current >= 95) {
+        const now = Date.now();
 
+        if (now - lastSentTimeRef.current > 5000) {
             updateProgress();
-            lastSentPercentRef.current = watchedPercentRef.current;
+            lastSentTimeRef.current = now;
         }
-
 
         if (watchedPercentRef >= 90 && !canProceed) {
             setCanProceed(true);
@@ -151,22 +152,50 @@ const Lesson = () => {
                 const response = await api.get(`course/lesson-details/${lessonSlug}/`);
                 setLessonDetails(response.data.lessonDetails);
                 setQuestions(response.data.lessonQuestions);
+
+                // Reset refs for new lesson
+                maxWatchedTimeRef.current = 0;
+                totalWatchedRef.current = 0;
+                lastTimeRef.current = 0;
+                watchedPercentRef.current = 0;
+                lastSentPercentRef.current = 0;
+                lastSentTimeRef.current = 0;
+                playerReadyRef.current = false;
+                playerRef.current = null;
+
                 const progress = response.data.lessonDetails.progress?.time || 0;
                 maxWatchedTimeRef.current = progress;
                 totalWatchedRef.current = progress;
+                lastTimeRef.current = progress;
+
+
             } catch (err) {
                 console.log(err);
+                if (err.request && !err.response) {
+                    showNetworkError(toast);
+                }
             }
         };
 
         getLessonDetails();
     }, [lessonSlug]);
 
+    // for updating last viewed lesson
     useEffect(() => {
-        if (playerReadyRef.current && lessonDetails?.progress?.time) {
-            seekToLastWatched();
-        }
-    }, [lessonDetails]);
+        const updateLastViewedLesson = async () => {
+            try {
+                const { data } = await api.put(`enrollment/update-lastviewed-lesson/${lessonDetails.id}/`)
+                if (data) console.log(data.message);
+            } catch (err) {
+                console.log(err);
+                if (err.request && !err.response) {
+                    showNetworkError(toast);
+                }
+            }
+        };
+
+        if (lessonDetails) updateLastViewedLesson();
+    }, [lessonSlug, lessonDetails])
 
     useEffect(() => {
         return () => cancelAnimationFrame(animationRef.current);
@@ -201,7 +230,7 @@ const Lesson = () => {
             <Toast ref={toast} />
             <div className="video-wrapper w-full aspect-video relative rounded-lg overflow-hidden">
                 <YouTube
-                    key={lessonDetails.video_id}
+                    key={lessonDetails.video_id + lessonSlug}
                     videoId={lessonDetails.video_id}
                     opts={{
                         width: "100%",

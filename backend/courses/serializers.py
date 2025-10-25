@@ -16,9 +16,22 @@ class CourseSerializer(serializers.ModelSerializer):
 
  
 class LessonListSerializer(serializers.ModelSerializer):
+    completed = serializers.SerializerMethodField()
     class Meta:
         model = Lesson
-        fields = ['id','title','slug']
+        fields = ['id','title','slug','completed']
+    
+
+    def get_completed(self,obj):
+        request = self.context.get('request')
+        if not request or not hasattr(request.user,'student_profile'):
+            return None
+        
+        student = request.user.student_profile
+        progress = LessonProgress.objects.filter(student=student,lesson=obj).values('completed').first()
+        if progress:
+            return progress['completed']
+        return None
 
 
 class LessonSerializer(serializers.ModelSerializer):
