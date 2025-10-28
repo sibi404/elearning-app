@@ -17,9 +17,10 @@ class CourseSerializer(serializers.ModelSerializer):
  
 class LessonListSerializer(serializers.ModelSerializer):
     completed = serializers.SerializerMethodField()
+    unlocked = serializers.SerializerMethodField()
     class Meta:
         model = Lesson
-        fields = ['id','title','slug','completed']
+        fields = ['id','title','slug','completed','unlocked']
     
 
     def get_completed(self,obj):
@@ -32,6 +33,25 @@ class LessonListSerializer(serializers.ModelSerializer):
         if progress:
             return progress['completed']
         return None
+    
+    def get_unlocked(self,obj):
+        request = self.context.get('request')
+        if not request or not hasattr(request.user,'student_profile'):
+            return None
+        
+        student = request.user.student_profile
+        if not student:
+            return False
+        
+        if obj.order == 1:
+            return True
+        
+        previous_lesson = Lesson.objects.filter(course=obj.course,order__lt=obj.order).order_by('-order').first()
+        if not previous_lesson:
+            return True
+        progress = LessonProgress.objects.filter(student=student,lesson=previous_lesson,completed=True).exists()
+        return progress
+
 
 
 class LessonSerializer(serializers.ModelSerializer):
@@ -51,6 +71,7 @@ class LessonSerializer(serializers.ModelSerializer):
         if progress:
             return {
                 "time" : float(progress.progress),
+                "percentage" : float(progress.percentage),
                 "completed" : progress.completed,
             }
         return {

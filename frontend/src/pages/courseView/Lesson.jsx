@@ -145,6 +145,18 @@ const Lesson = () => {
         animationRef.current = requestAnimationFrame(trackProgress);
     };
 
+    const handleMarkComplete = async () => {
+        try {
+            const response = await api.put(`course/complete-lesson/${lessonDetails.id}/`);
+            console.log(response);
+        } catch (err) {
+            console.log(err);
+            if (err.request && !err.response) {
+                showNetworkError(toast);
+            }
+        }
+    };
+
     //for getting lesson details
     useEffect(() => {
         const getLessonDetails = async () => {
@@ -164,6 +176,7 @@ const Lesson = () => {
                 playerRef.current = null;
 
                 const progress = response.data.lessonDetails.progress?.time || 0;
+                console.log(response.data.lessonDetails.progress.percentage);
                 maxWatchedTimeRef.current = progress;
                 totalWatchedRef.current = progress;
                 lastTimeRef.current = progress;
@@ -266,8 +279,10 @@ const Lesson = () => {
                         <p className="text-faded-text text-xs lg:text-sm">by teacher name here</p>
                     </div>
                     <button
-                        className="px-4 py-2 w-full sm:w-auto mt-2 sm:mt-0 rounded-md bg-primary text-sm font-medium text-white flex items-center justify-center gap-2 cursor-pointer">
-                        Mark as complete
+                        className={`px-4 py-2 w-full sm:w-auto mt-2 sm:mt-0 rounded-md ${lessonDetails.progress.percentage > 90 ? "bg-primary cursor-pointer" : "bg-[#5A6DA8] cursor-not-allowed"} text-sm font-medium text-white flex items-center justify-center gap-2`}
+                        onClick={handleMarkComplete}
+                        disabled={lessonDetails.progress.percentage <= 90}>
+                        {lessonDetails.progress.percentage <= 90 ? "Mark as complete" : "Completed"}
                         <CircleCheckBig className="w-4 font-medium" color="#ffffff" />
                     </button>
                 </div>

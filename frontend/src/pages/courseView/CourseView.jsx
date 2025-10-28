@@ -114,12 +114,16 @@ const CourseView = () => {
                 <div className="overflow-y-scroll h-[50vh]">
                     {
                         lessons.map((lesson) => (
-                            <NavLink to={`lessons/${lesson.slug}`} key={lesson.id}>
+                            <NavLink to={`lessons/${lesson.slug}`} key={lesson.id}
+                                onClick={(e) => {
+                                    if (!lesson.unlocked) e.preventDefault(); // stop navigation
+                                }}>
                                 {({ isActive }) => (
                                     <LessonCard
                                         title={lesson.title}
                                         completed={lesson.completed}
                                         activeLesson={isActive}
+                                        locked={!lesson.unlocked}
                                     />
                                 )}
                             </NavLink>

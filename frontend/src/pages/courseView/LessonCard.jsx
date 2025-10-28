@@ -2,7 +2,7 @@ import { CircleCheckBig, CirclePlay, Lock } from "lucide-react";
 
 const LessonCard = ({ title, activeLesson, completed, locked }) => {
     return (
-        <div className={`flex items-center gap-3 p-4 cursor-pointer ${activeLesson ? "border-l-2 border-l-primary bg-primary-fade" : ""}`}>
+        <div className={`flex items-center gap-3 p-4 ${locked ? "cursor-not-allowed" : "cursor-pointer"} ${activeLesson ? "border-l-2 border-l-primary bg-primary-fade" : ""}`}>
             {completed ?
                 <CircleCheckBig className={`w-5 font-medium shrink-0 ${completed ? "text-green-500" : ""}`} />
                 :

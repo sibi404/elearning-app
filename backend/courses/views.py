@@ -143,3 +143,21 @@ def update_lesson_progress(request,lesson_id):
             {'error' : f"An unexpected error occured : {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+    
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def complete_lesson(request,lesson_id):
+    student = getattr(request.user,'student_profile',None)
+    if not student:
+        return Response({"error" : "User is not student"},status=status.HTTP_403_FORBIDDEN)
+    try:
+        lesson = Lesson.objects.get(pk=lesson_id)
+    except Lesson.DoesNotExist:
+        return Response({"error" : "Lesson not found"},status=status.HTTP_404_NOT_FOUND)
+    
+    lesson_progress,created = LessonProgress.objects.get_or_create(student=student,lesson=lesson)
+
+    lesson_progress.completed = True
+    lesson_progress.save()
+
+    return Response(status=status.HTTP_204_NO_CONTENT)
