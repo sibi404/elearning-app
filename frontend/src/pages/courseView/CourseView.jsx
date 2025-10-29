@@ -90,7 +90,7 @@ const CourseView = () => {
 
     return (
         <div className="course-view flex">
-            <Outlet />
+            <Outlet context={{ setLessons, setCourse }} />
 
             {/* SIDE PANEL */}
             <div className="ml-3 border-l border-l-gray-300 bg-white w-[25%] fixed lg:static right-0 translate-x-full  lg:translate-x-0 z-30">
@@ -129,20 +129,6 @@ const CourseView = () => {
                             </NavLink>
                         ))
                     }
-                    {/* <LessonCard title={"Lesson 1 | Fundamentals of Linux"} activeLesson={true} completed={true} />
-                    <LessonCard title={"Lesson 2 | Basic Linux Commands"} activeLesson={false} completed={true} />
-                    <LessonCard title={"Lesson 2 | Basic Linux Commands"} activeLesson={false} completed={true} />
-                    <LessonCard title={"Lesson 2 | Basic Linux Commands"} activeLesson={false} />
-                    <LessonCard title={"Lesson 2 | Basic Linux Commands"} activeLesson={false} locked={true} />
-                    <LessonCard title={"Lesson 2 | Basic Linux Commands"} activeLesson={false} locked={true} />
-                    <LessonCard title={"Lesson 2 | Basic Linux Commands"} activeLesson={false} locked={true} />
-                    <LessonCard title={"Lesson 2 | Basic Linux Commands"} activeLesson={false} locked={true} />
-                    <LessonCard title={"Lesson 2 | Basic Linux Commands"} activeLesson={false} locked={true} />
-                    <LessonCard title={"Lesson 2 | Basic Linux Commands"} activeLesson={false} locked={true} />
-                    <LessonCard title={"Lesson 2 | Basic Linux Commands"} activeLesson={false} locked={true} />
-                    <LessonCard title={"Lesson 2 | Basic Linux Commands"} activeLesson={false} locked={true} />
-                    <LessonCard title={"Lesson 2 | Basic Linux Commands"} activeLesson={false} locked={true} />
-                    <LessonCard title={"Lesson 2 | Basic Linux Commands"} activeLesson={false} locked={true} /> */}
                 </div>
 
                 <div className="p-4 mt-5">

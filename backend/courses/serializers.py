@@ -20,7 +20,7 @@ class LessonListSerializer(serializers.ModelSerializer):
     unlocked = serializers.SerializerMethodField()
     class Meta:
         model = Lesson
-        fields = ['id','title','slug','completed','unlocked']
+        fields = ['id','title','slug','completed','unlocked','order']
     
 
     def get_completed(self,obj):

@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from . models import Lesson,LessonMaterials,LessonQuestion,StudentAnswer,QuestionOption,LessonProgress
 from . serializers import LessonListSerializer,LessonSerializer,LessonMaterialSerializer,LessonQuestionSerializer,StudentAnswerSerializer
+from enrollments.models import Enrollment
 
 # Create your views here.
 
@@ -160,4 +161,11 @@ def complete_lesson(request,lesson_id):
     lesson_progress.completed = True
     lesson_progress.save()
 
-    return Response(status=status.HTTP_204_NO_CONTENT)
+    course_progress = None
+    if lesson_progress.completed:
+        course_progress = Enrollment.objects.values_list('progress',flat=True).get(student=student,course=lesson.course)
+
+    return Response({
+        "completed" : lesson_progress.completed,
+        "course_progress" : course_progress
+    },status=status.HTTP_200_OK)

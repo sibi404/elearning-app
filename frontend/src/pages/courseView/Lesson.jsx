@@ -1,8 +1,8 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams, useOutletContext } from "react-router-dom";
 import YouTube from "react-youtube";
 import { Toast } from "primereact/toast";
-import { ClipboardList, BookText, MessagesSquare, NotebookPen, BrainCircuit, CircleCheckBig } from "lucide-react";
+import { ClipboardList, BookText, MessagesSquare, NotebookPen, BrainCircuit, CircleCheckBig, ChevronRight } from "lucide-react";
 
 import NavTabs from "../../components/NavTabs/NavTabs";
 import CourseOverview from './CourseOverview';
@@ -21,6 +21,8 @@ const Lesson = () => {
     const [canProceed, setCanProceed] = useState(false);
     const [currentQuestion, setCurrentQuestion] = useState(null);
     const [lessonDetails, setLessonDetails] = useState();
+    const [complete, setComplete] = useState(false);
+    const [questions, setQuestions] = useState();
 
     const playerRef = useRef(null);
     const lastTimeRef = useRef(0);
@@ -31,12 +33,13 @@ const Lesson = () => {
     const lastSentPercentRef = useRef(0);
     const lastSentTimeRef = useRef(0);
     const playerReadyRef = useRef(false);
+    const canProceedRef = useRef(false);
     const toast = useRef(null);
 
     const { lessonSlug } = useParams();
+    const navigate = useNavigate();
     const api = usePrivateApi();
-
-    const [questions, setQuestions] = useState();
+    const { setLessons, setCourse } = useOutletContext();
 
     const questionMap = useMemo(() => {
         const map = new Map();
@@ -139,7 +142,9 @@ const Lesson = () => {
             lastSentTimeRef.current = now;
         }
 
-        if (watchedPercentRef >= 90 && !canProceed) {
+        if (watchedPercentRef.current >= 90 && !canProceedRef.current) {
+            console.log("CAN PROCEED SET TRUE");
+            canProceedRef.current = true;
             setCanProceed(true);
         }
         animationRef.current = requestAnimationFrame(trackProgress);
@@ -147,8 +152,20 @@ const Lesson = () => {
 
     const handleMarkComplete = async () => {
         try {
-            const response = await api.put(`course/complete-lesson/${lessonDetails.id}/`);
-            console.log(response);
+            const { data } = await api.put(`course/complete-lesson/${lessonDetails.id}/`);
+            setComplete(data.completed);
+            setCourse(prev => ({ ...prev, progress: data.course_progress }));
+
+            if (data.completed) {
+                setLessons(prev => prev.map(lesson => {
+                    if (lesson.id === lessonDetails.id) {
+                        return { ...lesson, completed: true };
+                    } else if (lesson.order === lessonDetails.order + 1) {
+                        return { ...lesson, unlocked: true };
+                    }
+                    return lesson;
+                }))
+            }
         } catch (err) {
             console.log(err);
             if (err.request && !err.response) {
@@ -156,6 +173,11 @@ const Lesson = () => {
             }
         }
     };
+
+    useEffect(() => {
+        canProceedRef.current = canProceed;
+    }, [canProceed]);
+
 
     //for getting lesson details
     useEffect(() => {
@@ -176,7 +198,12 @@ const Lesson = () => {
                 playerRef.current = null;
 
                 const progress = response.data.lessonDetails.progress?.time || 0;
-                console.log(response.data.lessonDetails.progress.percentage);
+                const precentage = response.data.lessonDetails.progress?.precentage || 0;
+                const complete = response.data.lessonDetails.progress?.completed || false;
+
+                setComplete(complete);
+                setCanProceed(precentage > 90);
+
                 maxWatchedTimeRef.current = progress;
                 totalWatchedRef.current = progress;
                 lastTimeRef.current = progress;
@@ -279,10 +306,10 @@ const Lesson = () => {
                         <p className="text-faded-text text-xs lg:text-sm">by teacher name here</p>
                     </div>
                     <button
-                        className={`px-4 py-2 w-full sm:w-auto mt-2 sm:mt-0 rounded-md ${lessonDetails.progress.percentage > 90 ? "bg-primary cursor-pointer" : "bg-[#5A6DA8] cursor-not-allowed"} text-sm font-medium text-white flex items-center justify-center gap-2`}
+                        className={`px-4 py-2 w-full sm:w-auto mt-2 sm:mt-0 rounded-md ${canProceed ? "bg-primary cursor-pointer" : "bg-[#5A6DA8] cursor-not-allowed"} text-sm font-medium text-white flex items-center justify-center gap-2`}
                         onClick={handleMarkComplete}
-                        disabled={lessonDetails.progress.percentage <= 90}>
-                        {lessonDetails.progress.percentage <= 90 ? "Mark as complete" : "Completed"}
+                        disabled={!canProceed}>
+                        {complete ? "Completed" : "Mark as complete"}
                         <CircleCheckBig className="w-4 font-medium" color="#ffffff" />
                     </button>
                 </div>

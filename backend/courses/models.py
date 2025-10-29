@@ -29,12 +29,13 @@ class Lesson(models.Model):
     course = models.ForeignKey(Course,on_delete=models.CASCADE,related_name='lessons')
     title = models.CharField(max_length=100)
     video_id = models.CharField(max_length=20)
-    order = models.PositiveIntegerField(default=0)
+    order = models.PositiveIntegerField(default=1)
     about = models.TextField(null=True)
     slug = models.SlugField(default="",null=False,unique=True)
 
     class Meta:
         ordering = ['order']
+        unique_together = ('course','order')
     
     def save(self, *args, **kwargs):
         if not self.slug:
