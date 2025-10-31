@@ -50,7 +50,7 @@ class Lesson(models.Model):
 class LessonProgress(models.Model):
     student = models.ForeignKey('authentication.Student',on_delete=models.CASCADE,related_name='lesson_progress')
     lesson = models.ForeignKey('courses.Lesson',on_delete=models.CASCADE,related_name='progress_records')
-    progress = models.DecimalField(max_digits=5,decimal_places=1,default=0.0)
+    progress = models.DecimalField(max_digits=6,decimal_places=1,default=0.0)
     percentage = models.DecimalField(max_digits=4,decimal_places=1,default=0.0)
     completed = models.BooleanField(default=False)
     last_watched = models.DateTimeField(auto_now=True)

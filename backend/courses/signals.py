@@ -3,6 +3,8 @@ from django.db.models.signals import post_save
 from . models import LessonProgress,Lesson
 from enrollments.models import Enrollment
 
+from decimal import Decimal
+
 @receiver(post_save,sender=LessonProgress)
 def update_enrollment_progress(sender,instance,**kwargs):
     student = instance.student
@@ -20,6 +22,7 @@ def update_enrollment_progress(sender,instance,**kwargs):
     completed_lessons = LessonProgress.objects.filter(student=student,lesson__course=course,completed=True).count()
 
     progress_percent = (completed_lessons/total_lessons) * 100
+    progress_percent = Decimal(str(round(progress_percent, 1)))
 
     enrollment.progress = progress_percent
     enrollment.completed = progress_percent >= 90

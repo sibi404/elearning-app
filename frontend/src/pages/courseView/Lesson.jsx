@@ -1,8 +1,8 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-import { useNavigate, useParams, useOutletContext } from "react-router-dom";
+import { useParams, useOutletContext } from "react-router-dom";
 import YouTube from "react-youtube";
 import { Toast } from "primereact/toast";
-import { ClipboardList, BookText, MessagesSquare, NotebookPen, BrainCircuit, CircleCheckBig, ChevronRight } from "lucide-react";
+import { ClipboardList, BookText, MessagesSquare, NotebookPen, BrainCircuit, CircleCheckBig } from "lucide-react";
 
 import NavTabs from "../../components/NavTabs/NavTabs";
 import CourseOverview from './CourseOverview';
@@ -13,7 +13,7 @@ import Discussion from './Discussion';
 import Question from './question/Question';
 
 import { usePrivateApi } from "../../hooks/usePrivateApi";
-import { showNetworkError } from "../../utils/toast/toastFunctions";
+import { showNetworkError, showError } from "../../utils/toast/toastFunctions";
 
 const Lesson = () => {
     const [activeTab, setActiveTab] = useState(0);
@@ -37,7 +37,6 @@ const Lesson = () => {
     const toast = useRef(null);
 
     const { lessonSlug } = useParams();
-    const navigate = useNavigate();
     const api = usePrivateApi();
     const { setLessons, setCourse } = useOutletContext();
 
@@ -52,7 +51,7 @@ const Lesson = () => {
         if (!lessonDetails?.id) return false;
         try {
             const response = await api.post(`course/update-progress/${lessonDetails.id}/`, {
-                time: watchedPercentRef.current >= 98 ? playerRef.current.getDuration() : maxWatchedTimeRef.current.toFixed(1),
+                time: watchedPercentRef.current >= 98 ? playerRef.current.getDuration().toFixed(1) : maxWatchedTimeRef.current.toFixed(1),
                 percentage: watchedPercentRef.current.toFixed(1)
             });
             console.log(response.data.message);
@@ -61,6 +60,8 @@ const Lesson = () => {
             console.log(err);
             if (err.request && !err.response) {
                 showNetworkError(toast);
+            } else {
+                showError(toast, "Failed to save progress");
             }
             return false;
         }
@@ -153,6 +154,7 @@ const Lesson = () => {
     const handleMarkComplete = async () => {
         try {
             const { data } = await api.put(`course/complete-lesson/${lessonDetails.id}/`);
+            console.log(data);
             setComplete(data.completed);
             setCourse(prev => ({ ...prev, progress: data.course_progress }));
 

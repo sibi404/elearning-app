@@ -1,6 +1,8 @@
 from django.shortcuts import get_object_or_404
 from django.http import FileResponse,Http404
-from django.db import transaction
+from django.db import transaction,DataError
+
+from decimal import Decimal,ROUND_HALF_UP
 
 from rest_framework import status
 from rest_framework.decorators import api_view,permission_classes
@@ -114,8 +116,8 @@ def update_lesson_progress(request,lesson_id):
             )
         
         try:
-            time = float(time_str)
-            percentage = float(percentage_str)
+            time = Decimal(time_str).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP)
+            percentage = Decimal(percentage_str).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP)
         except (TypeError,ValueError):
             return Response(
                 {"error" : "time or percentage is not a valid number"},
@@ -131,7 +133,7 @@ def update_lesson_progress(request,lesson_id):
 
             if not created and time > progress.progress:
                 progress.progress = time
-                progress.percentage = percentage if percentage < 97 else 100.0
+                progress.percentage = percentage if percentage < 97 else 100
                 progress.save(update_fields=['progress','percentage','completed'])
 
         return Response(
@@ -139,7 +141,15 @@ def update_lesson_progress(request,lesson_id):
             status=status.HTTP_200_OK
         )
     
+    except DataError as e:
+        return Response(
+            {"error",f"Database error saving progress : {str(e)}"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
     except Exception as e:
+        print(e)
+        print(str(e))
         return Response(
             {'error' : f"An unexpected error occured : {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
