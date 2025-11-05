@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from . models import Course,Lesson,LessonMaterials,LessonQuestion,QuestionOption,StudentAnswer,LessonProgress
+from . models import Course,Lesson,LessonMaterials,LessonQuestion,QuestionOption,StudentAnswer,LessonProgress,CourseAnnouncement
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -128,3 +128,22 @@ class LessonQuestionSerializer(serializers.ModelSerializer):
 class StudentAnswerSerializer(serializers.Serializer):
     questionId = serializers.IntegerField()
     optionId = serializers.IntegerField()
+
+
+class CourseAnnouncementSerializer(serializers.ModelSerializer):
+    course_title = serializers.CharField(source='course.title',read_only=True)
+    sender = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CourseAnnouncement
+        fields = ['id','course','course_title','sender','title','content','published_at']
+    
+    def get_sender(self,obj):
+        user = obj.sender
+        full_name = f"{user.first_name} {user.last_name}".strip()
+        return full_name if full_name else user.username
+    
+    # def create(self, validated_data):
+    #     user = self.context['request'].user
+    #     announcement = CourseAnnouncement.objects.create(sender=user, **validated_data)
+    #     return announcement

@@ -156,7 +156,7 @@ const Lesson = () => {
             const { data } = await api.put(`course/complete-lesson/${lessonDetails.id}/`);
             console.log(data);
             setComplete(data.completed);
-            setCourse(prev => ({ ...prev, progress: data.course_progress }));
+            setCourse(prev => ({ ...prev, progress: data.course_progress || 0 }));
 
             if (data.completed) {
                 setLessons(prev => prev.map(lesson => {

@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 
 import SidePanel from "../../components/sidePanel/SidePanel";
 import DashboardHeader from "../../components/dashboardHeader/DashboardHeader";
+import AnnoucementModal from "./dashboard/announcementModal/AnnouncementModal";
 
 import blackOpenBookIcon from '../../assets/icons/open-book-black.png';
 import openBookIcon from '../../assets/icons/open_book.png';
@@ -14,6 +15,7 @@ import announcementIcon from '../../assets/icons/announcement.png';
 
 const TeacherDashboard = () => {
     const [sidePanel, setSidePanel] = useState(false);
+    const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
 
     const navigation = [
         {
@@ -41,7 +43,8 @@ const TeacherDashboard = () => {
         },
         {
             title: "Send Announcements",
-            icon: announcementIcon
+            icon: announcementIcon,
+            onClick: () => setShowAnnouncementModal(true)
         }
     ];
 
@@ -58,6 +61,9 @@ const TeacherDashboard = () => {
                 <DashboardHeader setSidePanel={setSidePanel} name={{ firstName: "Sara", lastName: "Johnson" }} />
                 <Outlet />
             </main>
+            {showAnnouncementModal && (
+                <AnnoucementModal onClose={() => setShowAnnouncementModal(false)} />
+            )}
         </div>
     );
 };

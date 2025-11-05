@@ -69,7 +69,7 @@ const SidePanel = ({ sidePanel, setSidePanel, navigation, quickAccess, dashboard
                 <ul className="pl-5 mt-3">
                     {
                         quickAccess.map((item) => (
-                            <li className='py-3 px-4 cursor-pointer flex items-center' key={item.title}>
+                            <li className='py-3 px-4 cursor-pointer flex items-center' key={item.title} onClick={item.onClick}>
                                 <img src={item.icon} alt="" />
                                 <span>{item.title}</span>
                             </li>

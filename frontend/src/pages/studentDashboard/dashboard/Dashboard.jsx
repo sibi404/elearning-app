@@ -8,16 +8,35 @@ import CourseCard from '../../../components/courseCard/CourseCard';
 import DeadlineCard from '../../../components/deadlineCard/DeadlineCard';
 import EmptyMessage from '../emptyMessage/EmptyMessage';
 
+import { useEffect, useState } from 'react';
 import { BookOpen, MessageSquare, CircleAlert } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
 
-
+import { usePrivateApi } from '../../../hooks/usePrivateApi';
 
 const Dashboard = () => {
+    const api = usePrivateApi();
+
+    const [announcements, setAnnouncements] = useState([]);
+
     const { enrolledCourses, completedCount } = useOutletContext();
     const overallProgress = enrolledCourses.length > 0
         ? (enrolledCourses.reduce((acc, course) => acc + parseFloat(course.progress), 0) / enrolledCourses.length)
         : 0;
+
+
+    useEffect(() => {
+        const getAnnouncements = async () => {
+            try {
+                const { data } = await api.get('course/get-course-announcements/');
+                setAnnouncements(data);
+            } catch (err) {
+                console.log(err);
+            }
+        };
+
+        getAnnouncements();
+    }, []);
 
 
     return (
@@ -68,13 +87,18 @@ const Dashboard = () => {
                         <h2 className='text-md text-text-black'>Recent Announcements</h2>
                     </div>
                     <div className="flex flex-col mt-1 overflow-y-scroll max-h-[35vh]">
-                        <AnnouncementCard />
-                        <AnnouncementCard />
-                        <AnnouncementCard />
-                        <AnnouncementCard />
-                        <AnnouncementCard />
-                        <AnnouncementCard />
-                        <AnnouncementCard />
+                        {
+                            announcements.map((announcement) => (
+                                <AnnouncementCard
+                                    key={announcement.id}
+                                    title={announcement.title}
+                                    sender={announcement.sender}
+                                    course={announcement.course_title}
+                                    content={announcement.content}
+                                    time={announcement.published_at}
+                                />
+                            ))
+                        }
                     </div>
                 </div>
 

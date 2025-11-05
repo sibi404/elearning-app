@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
 from django.utils import timezone
@@ -130,3 +131,22 @@ class StudentAnswer(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.question} - Correct: {self.is_correct}"
+    
+
+class LessonAssignment(models.Model):
+    lesson = models.ForeignKey('Lesson',on_delete=models.CASCADE,related_name='assignments')
+    title = models.CharField(max_length=225)
+
+
+class CourseAnnouncement(models.Model):
+    course = models.ForeignKey('Course',on_delete=models.CASCADE,related_name='announcements')
+    sender = models.ForeignKey(User,on_delete=models.CASCADE,related_name='sent_announcements')
+    title = models.CharField(max_length=225)
+    content = models.TextField()
+    published_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-published_at']
+
+    def __str__(self):
+        return f"{self.course} - {self.title}"

@@ -9,11 +9,30 @@ from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from . models import Lesson,LessonMaterials,LessonQuestion,StudentAnswer,QuestionOption,LessonProgress
-from . serializers import LessonListSerializer,LessonSerializer,LessonMaterialSerializer,LessonQuestionSerializer,StudentAnswerSerializer
+from . models import Lesson,LessonMaterials,LessonQuestion,StudentAnswer,QuestionOption,LessonProgress,CourseAnnouncement,Course
+from . serializers import LessonListSerializer,LessonSerializer,LessonMaterialSerializer,LessonQuestionSerializer,StudentAnswerSerializer,CourseAnnouncementSerializer
 from enrollments.models import Enrollment
 
 # Create your views here.
+
+@api_view(['GET'])
+def get_announcements(request):
+    student = getattr(request.user,'student_profile',None)
+    if not student:
+        return Response(
+            {"error","User is not a student"},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    announcements = CourseAnnouncement.objects.filter(
+        course__enrollment__student=student
+    ).distinct().order_by('-published_at')
+
+    serializer = CourseAnnouncementSerializer(announcements,many=True)
+
+    return Response(
+        serializer.data,status=status.HTTP_200_OK
+    )
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -148,7 +167,6 @@ def update_lesson_progress(request,lesson_id):
         )
     
     except Exception as e:
-        print(e)
         print(str(e))
         return Response(
             {'error' : f"An unexpected error occured : {str(e)}"},
@@ -179,3 +197,29 @@ def complete_lesson(request,lesson_id):
         "completed" : lesson_progress.completed,
         "course_progress" : course_progress
     },status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def teaching_courses(request):
+    teacher = getattr(request.user,'teacher_profile',None)
+    if not teacher:
+        return Response({"error" : "User is not a teacher"},status=status.HTTP_403_FORBIDDEN)
+    try:
+        courses = Course.objects.filter(teacher=teacher).values('id','title')
+        return Response(list(courses),status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error" : f"an unexpected error occured : {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_course_announcement(request):
+    teacher = getattr(request.user,'teacher_profile',None)
+    if not teacher:
+        return Response({"error" : "User is not a teacher"},status=status.HTTP_403_FORBIDDEN)
+    
+    serilizer = CourseAnnouncementSerializer(data=request.data,context={'request':request})
+    
+    if serilizer.is_valid():
+        serilizer.save(sender=request.user)
+        return Response({"message" : "created"},status=status.HTTP_201_CREATED)
+    
+    return Response(serilizer.error,status=status.HTTP_400_BAD_REQUEST)
