@@ -90,7 +90,7 @@ const TeacherDashboard = () => {
 
             <main className="flex-1 overflow-y-scroll xl:m-2 xl:rounded-2xl  bg-[#F9FAFB]">
                 <DashboardHeader setSidePanel={setSidePanel} name={{ firstName: userData.first_name || "", lastName: userData.last_name || "" }} />
-                <Outlet />
+                <Outlet context={{ userData }} />
             </main>
             {showAnnouncementModal && (
                 <AnnoucementModal onClose={() => setShowAnnouncementModal(false)} toast={toast} />

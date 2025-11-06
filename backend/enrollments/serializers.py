@@ -8,6 +8,16 @@ class EnrollmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Enrollment
         fields = ['course','progress','completed','enrolled_on']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        course_fields = self.context.get('course_fields', None)
+
+        if course_fields:
+            self.fields['course'] = CourseSerializer(
+                fields=course_fields 
+            )
     
     def validate_progress(self,value):
         if value < 0:

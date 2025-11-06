@@ -19,7 +19,7 @@ from courses.serializers import LessonListSerializer
 def get_enrolled_courses(request):
     student = get_object_or_404(Student, user=request.user)
     enrollments = student.enrollment_set.select_related('course')
-    serializer = EnrollmentSerializer(enrollments,many=True,context={'request' : request})
+    serializer = EnrollmentSerializer(enrollments,many=True,context={'request' : request,'course_fields' : ('id', 'title', 'description', 'thumbnail', 'duration', 'teacher', 'total_students','slug')})
     completed_count = enrollments.filter(completed=True).count()
 
     return Response({

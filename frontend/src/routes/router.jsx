@@ -78,6 +78,10 @@ export const router = createBrowserRouter([
                         index: true, element: <TeacherDashboard />
                     },
                     {
+                        path: "profile",
+                        element: <Profile />
+                    },
+                    {
                         path: "courses",
                         element: <TeacherCourses />
                     }

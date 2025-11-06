@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view,permission_classes
 
-from courses.serializers import CourseAnnouncementSerializer,CourseProgressSerializer
+from courses.serializers import CourseAnnouncementSerializer,CourseProgressSerializer,CourseSerializer
 from courses.models import Course
 
 from django.db.models import Count,Avg
@@ -46,7 +46,9 @@ def teaching_courses(request):
             total_students = Count('students'),
             overall_progress = Avg('enrollment__progress')
         ).only('id','title','slug')
-        serializer = CourseProgressSerializer(courses,many=True)
+        fields_to_include = ('id','title','slug','overall_progress','total_students')
+        serializer = CourseSerializer(courses,many=True,fields=fields_to_include)
+        print(serializer.data)
         
         return Response(serializer.data,status=status.HTTP_200_OK)
     except Exception as e:

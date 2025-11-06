@@ -2,7 +2,7 @@ import { Send, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { usePrivateApi } from '../../../../hooks/usePrivateApi';
-import { showSuccess } from '../../../../utils/toast/toastFunctions';
+import { showSuccess, showNetworkError } from '../../../../utils/toast/toastFunctions';
 
 const AnnoucementModal = ({ onClose, toast }) => {
     const textInputStye = "container-border px-4 py-2 placeholder:text-sm placeholder:font-light outline-none";
@@ -32,6 +32,9 @@ const AnnoucementModal = ({ onClose, toast }) => {
             }
         } catch (err) {
             console.log(err)
+            if (err.request && !err.response) {
+                showNetworkError(toast);
+            }
         }
     };
 
@@ -44,7 +47,6 @@ const AnnoucementModal = ({ onClose, toast }) => {
             setPartialData(false);
         }
         submitData();
-        console.log(announcement);
     }
 
     useEffect(() => {
@@ -54,6 +56,9 @@ const AnnoucementModal = ({ onClose, toast }) => {
                 setCourses(data);
             } catch (err) {
                 console.log(err);
+                if (err.request && !err.response) {
+                    showNetworkError(toast);
+                }
             }
         }
         getCourses();
@@ -103,7 +108,6 @@ const AnnoucementModal = ({ onClose, toast }) => {
                         </button>
                         <button
                             type='submit'
-                            // onClick={(e) => handleSubmit(e)}
                             className="order-1 lg:order-2 w-full px-5 py-3 rounded-md bg-primary text-white cursor-pointer flex items-center justify-center gap-5">
                             <Send size={20} /> Send Announcement
                         </button>
