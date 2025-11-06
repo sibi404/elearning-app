@@ -2,8 +2,9 @@ import { Send, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { usePrivateApi } from '../../../../hooks/usePrivateApi';
+import { showSuccess } from '../../../../utils/toast/toastFunctions';
 
-const AnnoucementModal = ({ onClose }) => {
+const AnnoucementModal = ({ onClose, toast }) => {
     const textInputStye = "container-border px-4 py-2 placeholder:text-sm placeholder:font-light outline-none";
     const inputGroupStyle = "flex flex-col mt-5";
     const [courses, setCourses] = useState([]);
@@ -26,6 +27,7 @@ const AnnoucementModal = ({ onClose }) => {
             const { status } = await api.post("course/add-course-announcement/", announcement);
             if (status === 201) {
                 setAnnouncement({ course: "", title: "", content: "" });
+                showSuccess(toast, "Announcement sent");
                 onClose();
             }
         } catch (err) {
@@ -48,7 +50,7 @@ const AnnoucementModal = ({ onClose }) => {
     useEffect(() => {
         const getCourses = async () => {
             try {
-                const { data } = await api.get("course/teaching-courses/");
+                const { data } = await api.get("course/teaching-courses-names/");
                 setCourses(data);
             } catch (err) {
                 console.log(err);

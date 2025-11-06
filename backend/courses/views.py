@@ -198,28 +198,3 @@ def complete_lesson(request,lesson_id):
         "course_progress" : course_progress
     },status=status.HTTP_200_OK)
 
-@api_view(['GET'])
-def teaching_courses(request):
-    teacher = getattr(request.user,'teacher_profile',None)
-    if not teacher:
-        return Response({"error" : "User is not a teacher"},status=status.HTTP_403_FORBIDDEN)
-    try:
-        courses = Course.objects.filter(teacher=teacher).values('id','title')
-        return Response(list(courses),status=status.HTTP_200_OK)
-    except Exception as e:
-        return Response({"error" : f"an unexpected error occured : {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def add_course_announcement(request):
-    teacher = getattr(request.user,'teacher_profile',None)
-    if not teacher:
-        return Response({"error" : "User is not a teacher"},status=status.HTTP_403_FORBIDDEN)
-    
-    serilizer = CourseAnnouncementSerializer(data=request.data,context={'request':request})
-    
-    if serilizer.is_valid():
-        serilizer.save(sender=request.user)
-        return Response({"message" : "created"},status=status.HTTP_201_CREATED)
-    
-    return Response(serilizer.error,status=status.HTTP_400_BAD_REQUEST)

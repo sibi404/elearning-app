@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db.models import Avg
 from . models import Course,Lesson,LessonMaterials,LessonQuestion,QuestionOption,StudentAnswer,LessonProgress,CourseAnnouncement
 
 
@@ -14,6 +15,15 @@ class CourseSerializer(serializers.ModelSerializer):
     def get_total_students(self,obj):
         return obj.students.count()
 
+
+class CourseProgressSerializer(serializers.ModelSerializer):
+    total_students = serializers.IntegerField(read_only=True)
+    overall_progress = serializers.FloatField(read_only=True)
+
+    class Meta:
+        model = Course
+        fields=['id','title','total_students','slug','overall_progress']
+    
  
 class LessonListSerializer(serializers.ModelSerializer):
     completed = serializers.SerializerMethodField()
@@ -142,8 +152,3 @@ class CourseAnnouncementSerializer(serializers.ModelSerializer):
         user = obj.sender
         full_name = f"{user.first_name} {user.last_name}".strip()
         return full_name if full_name else user.username
-    
-    # def create(self, validated_data):
-    #     user = self.context['request'].user
-    #     announcement = CourseAnnouncement.objects.create(sender=user, **validated_data)
-    #     return announcement

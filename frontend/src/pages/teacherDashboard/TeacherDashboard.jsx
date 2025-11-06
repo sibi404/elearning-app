@@ -1,5 +1,9 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Outlet } from "react-router-dom";
+import { Toast } from "primereact/toast";
+
+import { usePrivateApi } from "../../hooks/usePrivateApi";
+import { DATE_FORMAT } from '../../config';
 
 import SidePanel from "../../components/sidePanel/SidePanel";
 import DashboardHeader from "../../components/dashboardHeader/DashboardHeader";
@@ -16,6 +20,10 @@ import announcementIcon from '../../assets/icons/announcement.png';
 const TeacherDashboard = () => {
     const [sidePanel, setSidePanel] = useState(false);
     const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
+    const [userData, setUserData] = useState({});
+
+    const toast = useRef();
+    const api = usePrivateApi();
 
     const navigation = [
         {
@@ -48,8 +56,31 @@ const TeacherDashboard = () => {
         }
     ];
 
+    const getData = async () => {
+        try {
+            //for usersInfo
+            const userInfoResponse = await api.get("auth/user-info/");
+            const resData = userInfoResponse.data;
+            const date = new Date(resData.date_joined);
+            setUserData(
+                { ...resData.user, phoneNumber: resData.phone_number, role: resData.role, dateJoined: date.toLocaleDateString("en-IN", DATE_FORMAT) }
+            )
+
+        } catch (err) {
+            console.log(err);
+            if (err.request && !err.response) {
+                showNetworkError(toast);
+            }
+        }
+    };
+
+    useEffect(() => {
+        getData();
+    }, []);
+
     return (
         <div className="flex h-screen xl:bg-primary">
+            <Toast ref={toast} />
             <SidePanel
                 sidePanel={sidePanel}
                 setSidePanel={setSidePanel}
@@ -58,11 +89,11 @@ const TeacherDashboard = () => {
                 dashboardLink="/teacher" />
 
             <main className="flex-1 overflow-y-scroll xl:m-2 xl:rounded-2xl  bg-[#F9FAFB]">
-                <DashboardHeader setSidePanel={setSidePanel} name={{ firstName: "Sara", lastName: "Johnson" }} />
+                <DashboardHeader setSidePanel={setSidePanel} name={{ firstName: userData.first_name || "", lastName: userData.last_name || "" }} />
                 <Outlet />
             </main>
             {showAnnouncementModal && (
-                <AnnoucementModal onClose={() => setShowAnnouncementModal(false)} />
+                <AnnoucementModal onClose={() => setShowAnnouncementModal(false)} toast={toast} />
             )}
         </div>
     );

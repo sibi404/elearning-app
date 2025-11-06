@@ -1,6 +1,9 @@
 from django.urls import path
 from . import views
 
+from . teacher import views as teacher_view
+
+
 urlpatterns = [
    path('get-lessons/<int:course_id>/',views.get_lessons,name='get-lessons'),
    path('lesson-details/<slug:slug>/',views.get_lesson_details,name='get-lesson-details'),
@@ -10,6 +13,8 @@ urlpatterns = [
    path('update-progress/<int:lesson_id>/',views.update_lesson_progress,name='update-progress'),
    path('complete-lesson/<int:lesson_id>/',views.complete_lesson,name='complete-lesson'),
    path('download-material/<int:pk>/',views.download_material,name='download-material'),
-   path('teaching-courses/',views.teaching_courses,name='teaching-courses'),
-   path('add-course-announcement/',views.add_course_announcement,name='add-course-announcement'),
+
+   path('teaching-courses-names/',teacher_view.teaching_courses_names,name='teaching-courses-names'),
+   path('teaching-courses/',teacher_view.teaching_courses,name='teaching-courses'),
+   path('add-course-announcement/',teacher_view.add_course_announcement,name='add-course-announcement'),
 ]
