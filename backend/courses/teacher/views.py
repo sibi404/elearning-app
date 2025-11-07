@@ -5,16 +5,15 @@ from rest_framework.decorators import api_view,permission_classes
 
 from courses.serializers import CourseAnnouncementSerializer,CourseProgressSerializer,CourseSerializer
 from courses.models import Course
+from courses.permissions import IsTeacher
 
 from django.db.models import Count,Avg
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,IsTeacher])
 def add_course_announcement(request):
-    teacher = getattr(request.user,'teacher_profile',None)
-    if not teacher:
-        return Response({"error" : "User is not a teacher"},status=status.HTTP_403_FORBIDDEN)
+    teacher = request.user.teacher_profile
     
     serilizer = CourseAnnouncementSerializer(data=request.data,context={'request':request})
     
@@ -25,10 +24,9 @@ def add_course_announcement(request):
     return Response(serilizer.error,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
+@permission_classes([IsTeacher])
 def teaching_courses_names(request):
-    teacher = getattr(request.user,'teacher_profile',None)
-    if not teacher:
-        return Response({"error" : "User is not a teacher"},status=status.HTTP_403_FORBIDDEN)
+    teacher = request.user.teacher_profile
     try:
         courses = Course.objects.filter(teacher=teacher).values('id','title')
         return Response(list(courses),status=status.HTTP_200_OK)
@@ -37,10 +35,9 @@ def teaching_courses_names(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsTeacher])
 def teaching_courses(request):
-    teacher = getattr(request.user,'teacher_profile',None)
-    if not teacher:
-        return Response({"error":"User is not a teacher"},status=status.HTTP_403_FORBIDDEN)
+    teacher = request.user.teacher_profile
     try:
         courses = Course.objects.filter(teacher=teacher).annotate(
             total_students = Count('students'),
