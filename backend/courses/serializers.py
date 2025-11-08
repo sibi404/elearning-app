@@ -8,10 +8,12 @@ class CourseSerializer(serializers.ModelSerializer):
     thumbnail = serializers.ImageField(read_only=True)
     total_students = serializers.SerializerMethodField()
     overall_progress = serializers.FloatField(read_only=True)
+    total_lessons = serializers.IntegerField(read_only=True)
+    total_materials = serializers.IntegerField(read_only=True)
     
     class Meta:
         model = Course
-        fields = ['id', 'title', 'description', 'thumbnail', 'duration', 'teacher', 'total_students','slug','overall_progress']
+        fields = ['id', 'title', 'description', 'thumbnail', 'duration', 'teacher', 'total_students','slug','overall_progress','total_lessons','total_materials']
     
     def __init__(self, *args, **kwargs):
         fields = kwargs.pop('fields', None)

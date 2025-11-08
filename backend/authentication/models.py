@@ -41,6 +41,16 @@ class Teacher(models.Model):
 
     def __str__(self):
         return self.user.get_full_name() or self.user.first_name
+    
+    @property
+    def total_lessons(self):
+        from courses.models import Lesson
+        return Lesson.objects.filter(course__teacher=self).count()
+    
+    @property
+    def total_students(self):
+        from enrollments.models import Enrollment
+        return Enrollment.objects.filter(course__teacher=self).values('student').distinct().count()
 
 class Management(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE,primary_key=True,related_name='management_profile')

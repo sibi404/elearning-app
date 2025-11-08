@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import App from "../App";
 import StudentDashboardLayout from "../pages/studentDashboard/StudentDashboard";
@@ -16,6 +16,11 @@ import AdminDashboard from "../pages/adminDashboard/AdminDashboard";
 import SignUp from "../pages/signUp/SignUp";
 
 import Lesson from "../pages/courseView/Lesson";
+import CourseDetail from "../pages/courseDetail/CourseDetail";
+import StudentTab from "../pages/courseDetail/studentTab/StudentTab";
+import LessonTab from "../pages/courseDetail/LessonTab/LessonTab";
+import AssignmentTab from "../pages/courseDetail/assignmentTab/AssignmentTab";
+import DiscussionTab from "../pages/courseDetail/discussionTab/DiscussionTab";
 
 
 export const router = createBrowserRouter([
@@ -84,6 +89,31 @@ export const router = createBrowserRouter([
                     {
                         path: "courses",
                         element: <TeacherCourses />
+                    },
+                    {
+                        path: "courses/:courseSlug",
+                        element: <CourseDetail />,
+                        children: [
+                            {
+                                index: true, element: <Navigate to="students" replace />
+                            },
+                            {
+                                path: "students",
+                                element: <StudentTab />
+                            },
+                            {
+                                path: "lessons",
+                                element: <LessonTab />
+                            },
+                            {
+                                path: "assignments",
+                                element: <AssignmentTab />
+                            },
+                            {
+                                path: "discussion",
+                                element: <DiscussionTab />
+                            }
+                        ]
                     }
                 ]
             }

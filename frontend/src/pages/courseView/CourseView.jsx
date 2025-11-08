@@ -11,6 +11,7 @@ import { usePrivateApi } from '../../hooks/usePrivateApi';
 import LessonCard from "./LessonCard";
 import ActionCard from "./ActionCard";
 import Error from '../../components/error/Error';
+import BackButton from '../../components/backButton/BackButton';
 
 const CourseView = () => {
 
@@ -96,10 +97,7 @@ const CourseView = () => {
             <div className="ml-3 border-l border-l-gray-300 bg-white w-[25%] fixed lg:static right-0 translate-x-full  lg:translate-x-0 z-30">
                 <div className="px-6 py-5 border-b border-b-gray-300">
                     <Link to="/student/courses">
-                        <button className="px-2 py-1 text-xs text-primary border-1 border-primary rounded-sm flex items-center cursor-pointer">
-                            <ChevronLeft className="text-primary w-4" />
-                            Back to Course
-                        </button>
+                        <BackButton text="Back to course" />
                     </Link>
                     <h2 className="font-semibold text-md md:text-lg mt-4 ">{course?.title}</h2>
                     <div className="progress-bar w-full bg-gray-400 h-3 rounded-full mt-3 relative">

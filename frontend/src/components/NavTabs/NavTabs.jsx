@@ -1,8 +1,10 @@
 import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import './navTabs.css';
 
-const NavTabs = ({ tabs, setActiveTab, icons }) => {
+const NavTabs = ({ tabs, setActiveTab, icons, links = null }) => {
+    const navigate = useNavigate();
 
     const activeTabRef = useRef();
     const [activeIndex, setActiveIndex] = useState(0);
@@ -16,6 +18,9 @@ const NavTabs = ({ tabs, setActiveTab, icons }) => {
         activeTabRef.current.style.left = move + "%";
         setActiveIndex(index);
         setActiveTab(index);
+        if (links) {
+            navigate(links[index]);
+        }
     };
 
     return (

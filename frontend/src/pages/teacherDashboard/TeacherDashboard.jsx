@@ -21,6 +21,7 @@ const TeacherDashboard = () => {
     const [sidePanel, setSidePanel] = useState(false);
     const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
     const [userData, setUserData] = useState({});
+    const [insightData, setInsightData] = useState({});
 
     const toast = useRef();
     const api = usePrivateApi();
@@ -66,6 +67,10 @@ const TeacherDashboard = () => {
                 { ...resData.user, phoneNumber: resData.phone_number, role: resData.role, dateJoined: date.toLocaleDateString("en-IN", DATE_FORMAT) }
             )
 
+            //for insight data
+            const { data: insightResponseData } = await api.get("course/teacher-insight-data/");
+            setInsightData(insightResponseData)
+
         } catch (err) {
             console.log(err);
             if (err.request && !err.response) {
@@ -90,7 +95,7 @@ const TeacherDashboard = () => {
 
             <main className="flex-1 overflow-y-scroll xl:m-2 xl:rounded-2xl  bg-[#F9FAFB]">
                 <DashboardHeader setSidePanel={setSidePanel} name={{ firstName: userData.first_name || "", lastName: userData.last_name || "" }} />
-                <Outlet context={{ userData }} />
+                <Outlet context={{ userData, insightData }} />
             </main>
             {showAnnouncementModal && (
                 <AnnoucementModal onClose={() => setShowAnnouncementModal(false)} toast={toast} />

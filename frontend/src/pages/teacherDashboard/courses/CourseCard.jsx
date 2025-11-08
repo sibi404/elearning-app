@@ -1,6 +1,7 @@
 import { Eye, SquarePen, ChartColumn } from "lucide-react";
+import { NavLink } from "react-router-dom";
 
-const CourseCard = ({ title, lastUpdate, students, videos, materials, progress, active }) => {
+const CourseCard = ({ title, lastUpdate, students, videos, materials, progress, active, slug }) => {
     return (
         <div className="container-border p-5 mt-3">
             <div className="flex items-center justify-between">
@@ -19,7 +20,9 @@ const CourseCard = ({ title, lastUpdate, students, videos, materials, progress, 
                 <StatItem value={progress} label="Avg Progress" color="text-blue-500" />
             </div>
             <div className="flex items-center gap-2 text-xs font-semibold mt-5">
-                <ActionButtons label="View" icon={Eye} />
+                <NavLink to={slug}>
+                    <ActionButtons label="View" icon={Eye} />
+                </NavLink>
                 <ActionButtons label="Edit" icon={SquarePen} />
                 <ActionButtons label="Analytics" icon={ChartColumn} />
 

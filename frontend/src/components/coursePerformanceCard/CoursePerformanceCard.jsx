@@ -1,5 +1,7 @@
 import { Users } from "lucide-react";
 
+import ProgressBar from "../progressBar/ProgressBar";
+
 const CoursePerformanceCard = ({ courseTitle, completion, studentsCount }) => {
     const getAccentColor = () => {
         if (completion >= 75) return "text-emerald-600";
@@ -22,12 +24,7 @@ const CoursePerformanceCard = ({ courseTitle, completion, studentsCount }) => {
                     <p className="text-xs text-faded-text mt-2">Avg completion</p>
                 </div>
             </div>
-            <div className="progress-bar w-full bg-gray-400 h-2 rounded-full mt-4 relative">
-                <div
-                    className="progress absolute bg-primary h-full rounded-l-full"
-                    style={{ width: `${Math.round(completion)}%` }}>
-                </div>
-            </div>
+            <ProgressBar progressRate={completion} />
             <div className={`mt-3 text-xs font-medium text-right ${getAccentColor()}`}>
                 {completion === 0 && "Not started"}
                 {completion > 0 && completion < 25 && "Just getting started"}

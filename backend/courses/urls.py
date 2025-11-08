@@ -15,6 +15,8 @@ urlpatterns = [
    path('download-material/<int:pk>/',views.download_material,name='download-material'),
 
    path('teaching-courses-names/',teacher_view.teaching_courses_names,name='teaching-courses-names'),
+   path('teacher-insight-data/',teacher_view.get_insight_data,name='teacher-insignt-data'),
    path('teaching-courses/',teacher_view.teaching_courses,name='teaching-courses'),
+   path('teacher-course-list/',teacher_view.course_list,name='teacher-course-list'),
    path('add-course-announcement/',teacher_view.add_course_announcement,name='add-course-announcement'),
 ]

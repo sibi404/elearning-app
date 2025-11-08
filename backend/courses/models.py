@@ -13,6 +13,7 @@ class Course(models.Model):
     duration = models.PositiveIntegerField(default=0)
     teacher = models.ForeignKey('authentication.Teacher',on_delete=models.CASCADE)
     slug = models.SlugField(default="",null=False,unique=True)
+    active = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:

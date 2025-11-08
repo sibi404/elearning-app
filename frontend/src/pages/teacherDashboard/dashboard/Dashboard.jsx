@@ -10,10 +10,12 @@ import { showNetworkError } from "../../../utils/toast/toastFunctions";
 
 import { useEffect, useRef, useState } from "react";
 import { Toast } from "primereact/toast";
+import { useOutletContext } from "react-router-dom";
 
 const Dashboard = () => {
     const api = usePrivateApi();
     const toast = useRef();
+    const { insightData } = useOutletContext();
 
     const [loading, setLoading] = useState(false);
     const [coursePerformance, setCoursePerformance] = useState([]);
@@ -54,8 +56,8 @@ const Dashboard = () => {
             <Toast ref={toast} />
             <div className='flex items-center justify-between flex-wrap'>
                 <InsightCard title={"Active Courses"} value={6} background={"blue-gradient"} img={openBookIcon} />
-                <InsightCard title={"Total Students"} value={"150"} background={"green-gradient"} img={usersIcon} />
-                <InsightCard title={"Videos Uploaded"} value={100} background={"orange-gradient"} img={videoIcon} />
+                <InsightCard title={"Total Students"} value={insightData.total_students} background={"green-gradient"} img={usersIcon} />
+                <InsightCard title={"Videos Uploaded"} value={insightData.total_lessons} background={"orange-gradient"} img={videoIcon} />
             </div>
             <div className="mt-5">
                 <h2 className="text-2xl font-semibold">Course Preformance</h2>

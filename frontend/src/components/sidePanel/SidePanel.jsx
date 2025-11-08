@@ -38,7 +38,7 @@ const SidePanel = ({ sidePanel, setSidePanel, navigation, quickAccess, dashboard
     };
 
     return (
-        <aside className={`sidepanel fixed xl:static ${sidePanel ? "translate-x-0" : "-translate-x-full"} xl:translate-x-0 text-white min-h-screen xl:w-[18%] bg-primary p-8 flex flex-col z-20`}>
+        <aside className={`sidepanel fixed xl:static ${sidePanel ? "translate-x-0" : "-translate-x-full"} xl:translate-x-0 text-white min-h-screen xl:w-[18%] bg-primary p-8 flex flex-col z-50`}>
             <div className='xl:hidden absolute top-5 right-5 cursor-pointer' onClick={() => setSidePanel((prev) => !prev)}>
                 <img src={closeIcon} alt="" className='w-5' />
             </div>
