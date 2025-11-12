@@ -323,7 +323,7 @@ const Lesson = () => {
                 icons={[ClipboardList, BookText, MessagesSquare, NotebookPen, BrainCircuit]}
                 setActiveTab={setActiveTab}
             />
-            <div className='px-5'>
+            <div className='px-5 min-h-[40vh]'>
                 {activeTab === 0 && (
                     <CourseOverview about={lessonDetails.about} />
                 )}
@@ -332,7 +332,7 @@ const Lesson = () => {
                 )}
 
                 {activeTab === 2 && (
-                    <CourseAssignments />
+                    <CourseAssignments lessonId={lessonDetails.id} toast={toast} />
                 )}
 
                 {activeTab === 3 && (

@@ -13,6 +13,8 @@ urlpatterns = [
    path('update-progress/<int:lesson_id>/',views.update_lesson_progress,name='update-progress'),
    path('complete-lesson/<int:lesson_id>/',views.complete_lesson,name='complete-lesson'),
    path('download-material/<int:pk>/',views.download_material,name='download-material'),
+   path('get-assignments/<int:lesson_id>/',views.get_lesson_assignments,name='lesson-assignments'),
+   path('submit-assignment/<int:lesson_id>/',views.submit_assignment,name='submit-assignment'),
 
    path('teaching-courses-names/',teacher_view.teaching_courses_names,name='teaching-courses-names'),
    path('teacher-insight-data/',teacher_view.get_insight_data,name='teacher-insignt-data'),

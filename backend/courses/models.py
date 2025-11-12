@@ -137,6 +137,51 @@ class StudentAnswer(models.Model):
 class LessonAssignment(models.Model):
     lesson = models.ForeignKey('Lesson',on_delete=models.CASCADE,related_name='assignments')
     title = models.CharField(max_length=225)
+    description = models.TextField(blank=True,null=True)
+    file = models.FileField(upload_to='assignment_files/',blank=True,null=True)
+    due_date = models.DateTimeField(blank=True,null=True)
+    created_at = models.DateTimeField( auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.lesson.title} - {self.title}"
+
+
+class AssignmentSubmission(models.Model):
+    GRADE_CHOICES = [
+        ('A+', 'A+'),
+        ('A', 'A'),
+        ('B+', 'B+'),
+        ('B', 'B'),
+        ('C+', 'C+'),
+        ('C', 'C'),
+        ('D', 'D'),
+        ('F', 'F'),
+    ]
+    assignment = models.ForeignKey('LessonAssignment', on_delete=models.CASCADE, related_name='submissions')
+    student = models.ForeignKey('authentication.Student', on_delete=models.CASCADE, related_name='assignment_submissions')
+    file = models.FileField(upload_to='student_submissions/')
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    grade = models.CharField(max_length=2,null=True,blank=True,choices=GRADE_CHOICES)
+    feedback = models.TextField(blank=True, null=True)
+    graded_at = models.DateTimeField(blank=True, null=True)
+    is_graded = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('assignment', 'student')
+        ordering = ['-submitted_at']
+
+    def __str__(self):
+        return f"{self.assignment.title} - {self.student.user.username}"
+
+    def grade_submission(self, grade, feedback=None):
+        self.grade = grade
+        self.feedback = feedback
+        self.is_graded = True
+        self.graded_at = timezone.now()
+        self.save()
 
 
 class CourseAnnouncement(models.Model):

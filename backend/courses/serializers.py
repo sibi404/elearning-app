@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.db.models import Avg
-from . models import Course,Lesson,LessonMaterials,LessonQuestion,QuestionOption,StudentAnswer,LessonProgress,CourseAnnouncement
+from . models import Course,Lesson,LessonMaterials,LessonQuestion,QuestionOption,StudentAnswer,LessonProgress,CourseAnnouncement,LessonAssignment
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -148,6 +148,46 @@ class LessonQuestionSerializer(serializers.ModelSerializer):
             "answer": instance.options.filter(is_correct=True).first().option_text if instance.options.filter(is_correct=True).exists() else None,
             "answered": answered
         }
+    
+class LessonAssignmentSerializer(serializers.ModelSerializer):
+    graded = serializers.SerializerMethodField()
+    submitted = serializers.SerializerMethodField()
+    submitted_at = serializers.SerializerMethodField()
+    grade = serializers.SerializerMethodField()
+
+    class Meta:
+        model = LessonAssignment
+        fields = ['id','title','description','file','due_date','created_at','graded','grade','submitted','submitted_at']
+
+    
+
+    def get_submission(self,obj):
+        user = self.context.get("user")
+        if not user or not hasattr(user,"student_profile"):
+            return None
+        
+        from . models import AssignmentSubmission
+        return AssignmentSubmission.objects.filter(assignment=obj,student=user.student_profile).first()
+    
+    def get_submitted(self,obj):
+        submission= self.get_submission(obj)
+        return submission is not None
+    
+    def get_submitted_at(self, obj):
+        submission = self.get_submission(obj)
+        return submission.submitted_at if submission else None
+
+    def get_graded(self,obj):
+        submission = self.get_submission(obj)
+        if submission:
+            return submission.is_graded
+        return False
+    
+    def get_grade(self, obj):
+        submission = self.get_submission(obj)
+        return submission.grade if submission else None
+        
+
     
 
 class StudentAnswerSerializer(serializers.Serializer):

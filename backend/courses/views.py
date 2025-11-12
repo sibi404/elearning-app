@@ -9,9 +9,31 @@ from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from . models import Lesson,LessonMaterials,LessonQuestion,StudentAnswer,QuestionOption,LessonProgress,CourseAnnouncement,Course
-from . serializers import LessonListSerializer,LessonSerializer,LessonMaterialSerializer,LessonQuestionSerializer,StudentAnswerSerializer,CourseAnnouncementSerializer
+from . models import (
+    Lesson,
+    LessonMaterials,
+    LessonQuestion,
+    StudentAnswer,
+    QuestionOption,
+    LessonProgress,
+    CourseAnnouncement,
+    AssignmentSubmission,
+    LessonAssignment
+    )
+
+from . serializers import (
+    LessonListSerializer,
+    LessonSerializer,
+    LessonMaterialSerializer,
+    LessonQuestionSerializer,
+    StudentAnswerSerializer,
+    CourseAnnouncementSerializer,
+    LessonAssignmentSerializer,
+    )
+
 from enrollments.models import Enrollment
+
+from courses.permissions import IsStudent
 
 # Create your views here.
 
@@ -197,4 +219,20 @@ def complete_lesson(request,lesson_id):
         "completed" : lesson_progress.completed,
         "course_progress" : course_progress
     },status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_lesson_assignments(request,lesson_id):
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+    assignments = LessonAssignment.objects.filter(lesson=lesson)
+    serializer = LessonAssignmentSerializer(assignments, many=True,context={'user': request.user})
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def submit_assignment(request,assignment_id):
+    submission = AssignmentSubmission.objects.get(pk=assignment_id)
+
+    return Response({"message" : "Success"},status=status.HTTP_200_OK)
+
 
