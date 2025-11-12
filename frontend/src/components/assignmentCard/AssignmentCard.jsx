@@ -1,6 +1,7 @@
 import { CircleCheck, Calendar, Clock, ClockFading, Upload } from "lucide-react";
 
-const AssignmentCard = ({ title, description, dueDate, submitDate, submitted, graded, grade, setShowAssignmentModal }) => {
+const AssignmentCard = ({ assignment, dueDate, submitDate, setShowAssignmentModal, setSelectedAssignment }) => {
+    const { title, description, submitted, graded, grade } = assignment;
 
     return (
         <div className="assignment-card container-border px-4 py-2 mt-3">
@@ -42,7 +43,12 @@ const AssignmentCard = ({ title, description, dueDate, submitDate, submitted, gr
                     submitted ?
                         <FeedbackButton />
                         :
-                        <SubmitButton setShowAssignmentModal={setShowAssignmentModal} />
+                        <SubmitButton
+                            onClick={() => {
+                                setSelectedAssignment({ ...assignment, dueDate });
+                                setShowAssignmentModal(true);
+                            }}
+                        />
                 }
             </div>
         </div>
@@ -68,10 +74,11 @@ const FeedbackButton = () => {
     );
 };
 
-const SubmitButton = ({ setShowAssignmentModal }) => {
+const SubmitButton = ({ onClick }) => {
     return (
         <button className="text-sm font-medium px-4 py-2 rounded-lg cursor-pointer bg-primary text-white flex items-center justify-center gap-2"
-            onClick={() => setShowAssignmentModal(true)}>
+            onClick={onClick}
+        >
             <Upload className="w-5" />
             Submit Now
         </button>

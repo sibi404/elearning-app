@@ -5,7 +5,8 @@ from django.db import transaction,DataError
 from decimal import Decimal,ROUND_HALF_UP
 
 from rest_framework import status
-from rest_framework.decorators import api_view,permission_classes
+from rest_framework.decorators import api_view,permission_classes,parser_classes
+from rest_framework.parsers import MultiPartParser,FormParser
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
@@ -230,9 +231,33 @@ def get_lesson_assignments(request,lesson_id):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser,FormParser])
 def submit_assignment(request,assignment_id):
-    submission = AssignmentSubmission.objects.get(pk=assignment_id)
+    student = getattr(request.user,'student_profile',None)
+    if not student:
+        return Response({"error" : "User is not student"},status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        assignment = LessonAssignment.objects.get(id=assignment_id)
+    except LessonAssignment.DoesNotExist:
+        return Response({"error" : "Assignment not found"},status=status.HTTP_404_NOT_FOUND)
+    
+    file_obj = request.FILES.get('file')
+    if not file_obj:
+        return Response({"error" : "No file uploaded"},status=status.HTTP_400_BAD_REQUEST)
+    
+    submission,created = AssignmentSubmission.objects.get_or_create(
+        assignment=assignment,
+        student=student
+    )
 
-    return Response({"message" : "Success"},status=status.HTTP_200_OK)
+    submission.file = file_obj
+    submission.is_graded = False
+    submission.save()
+
+    message = "Assignment submitted successfully!" if created else "Assignment resubmitted successfully!"
+
+
+    return Response({"message" : message,"submitted_at" : submission.submitted_at},status=status.HTTP_200_OK)
 
 

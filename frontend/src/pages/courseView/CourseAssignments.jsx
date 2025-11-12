@@ -11,6 +11,7 @@ import { DATE_FORMAT } from "../../config";
 const CourseAssignments = ({ lessonId, toast }) => {
     const [showAssignmentModal, setShowAssignmentModal] = useState(false);
     const [assignments, setAssignments] = useState([]);
+    const [selectedAssignment, setSelectedAssignment] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -40,7 +41,14 @@ const CourseAssignments = ({ lessonId, toast }) => {
 
     return (
         <div>
-            {showAssignmentModal && <SubmitAssignmentModal onClose={() => setShowAssignmentModal(false)} />}
+            {showAssignmentModal && selectedAssignment && (
+                <SubmitAssignmentModal
+                    onClose={() => setShowAssignmentModal(false)}
+                    assignment={selectedAssignment}
+                    setAssignments={setAssignments}
+                    toast={toast}
+                />
+            )}
             <SectionTitle title="Course Assignments" />
             <div>
                 {isLoading && <MaterialSkelton />}
@@ -55,14 +63,11 @@ const CourseAssignments = ({ lessonId, toast }) => {
 
                         return <AssignmentCard
                             key={assignment.id}
-                            submitted={assignment.submitted}
-                            title={assignment.title}
-                            description={assignment.description}
+                            assignment={assignment}
                             dueDate={dueDate.toLocaleDateString("en-IN", DATE_FORMAT)}
                             submitDate={submitDate.toLocaleDateString("en-IN", DATE_FORMAT)}
-                            graded={assignment.graded}
-                            grade={assignment.grade}
                             setShowAssignmentModal={setShowAssignmentModal}
+                            setSelectedAssignment={setSelectedAssignment}
                         />
                     })
                 }

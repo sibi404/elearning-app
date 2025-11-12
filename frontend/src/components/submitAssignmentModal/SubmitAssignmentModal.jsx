@@ -2,9 +2,11 @@ import { useRef, useState } from 'react';
 import { Upload, Calendar, X } from 'lucide-react';
 
 import { usePrivateApi } from '../../hooks/usePrivateApi';
+import { showNetworkError, showSuccess } from '../../utils/toast/toastFunctions';
 
-const SubmitAssignmentModal = ({ onClose }) => {
+const SubmitAssignmentModal = ({ onClose, assignment, toast, setAssignments }) => {
     const [isDragging, setIsDragging] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [file, setFile] = useState(null);
 
     const api = usePrivateApi();
@@ -42,18 +44,52 @@ const SubmitAssignmentModal = ({ onClose }) => {
         }
     };
 
-    // const submitAssignment = async () => {
-    //     try {
-    //         const response = api.post('course/submit-assignment/')
-    //     }
-    // }
+    const submitAssignment = async (formData) => {
+        try {
+            const response = await api.post(`course/submit-assignment/${assignment.id}/`,
+                formData,
+                {
+                    headers: { "Content-Type": "multipart/form-data" },
+                }
+            );
+            return response.data;
+        } catch (err) {
+            console.log(err);
+            if (err.request && !err.response) {
+                showNetworkError(toast);
+            }
+        }
+    };
 
-    const handleSubmit = () => {
-        const formData = new formData();
+    const handleSubmit = async () => {
+        if (!file) {
+            return;
+        }
+        const formData = new FormData();
         formData.append("file", file);
-
-        console.log(file);
-    }
+        setIsSubmitting(true);
+        try {
+            const data = await submitAssignment(formData);
+            showSuccess(toast, "Assignment submitted successfully!");
+            setAssignments(prev =>
+                prev.map(a =>
+                    a.id === assignment.id
+                        ? {
+                            ...a,
+                            submitted: true,
+                            submitted_at: data.submitted_at,
+                            graded: false,
+                        }
+                        : a
+                )
+            );
+            onClose();
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <div ref={modalRef} onClick={closeModal} className="fixed inset-0 w-full min-h-screen bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -62,7 +98,7 @@ const SubmitAssignmentModal = ({ onClose }) => {
                 <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
                     <div>
                         <h2 className="text-xl font-semibold text-slate-900">Assignment Details</h2>
-                        <p className="text-sm text-slate-500 mt-1">React optimization with hooks</p>
+                        <p className="text-sm text-slate-500 mt-1">{assignment.title}</p>
                     </div>
                     <button className="text-slate-400 hover:text-slate-600 transition-colors p-1 hover:bg-slate-100 rounded-lg"
                         onClick={onClose}>
@@ -76,8 +112,7 @@ const SubmitAssignmentModal = ({ onClose }) => {
                     <div>
                         <h3 className="text-sm font-medium text-slate-700 mb-2">Description</h3>
                         <p className="text-sm text-slate-600 leading-relaxed">
-                            Optimize a React application using memo, useMemo, and useCallback hooks to improve performance.
-                            Identify unnecessary re-renders and apply appropriate memoization techniques to enhance the application's efficiency.
+                            {assignment.description}
                         </p>
                     </div>
 
@@ -88,7 +123,7 @@ const SubmitAssignmentModal = ({ onClose }) => {
                         </div>
                         <div>
                             <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Due Date</p>
-                            <p className="text-sm font-semibold text-slate-900 mt-0.5">January 20, 2026</p>
+                            <p className="text-sm font-semibold text-slate-900 mt-0.5">{assignment.dueDate}</p>
                         </div>
                     </div>
 
