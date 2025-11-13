@@ -4,8 +4,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view,permission_classes
 
 from courses.serializers import CourseAnnouncementSerializer,CourseSerializer
-from courses.models import Course
+from courses.models import Course,AssignmentSubmission,LessonAssignment
 from courses.permissions import IsTeacher
+
+from enrollments.models import Enrollment
 
 from django.db.models import Count,Avg
 
@@ -76,3 +78,57 @@ def course_list(request):
         return Response(serialzer.data,status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"error" : f"an unexpected error occured : {str(e)}"},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsTeacher])
+def course_details(request,course_slug):
+    try:
+        course = Course.objects.annotate(
+            overall_progress = Avg('enrollment__progress'),
+            total_lessons = Count('lessons',distinct=True),
+
+        ).get(slug=course_slug)
+
+        fields_to_include = ('id','title','overall_progress','total_students','total_lessons')
+
+        serializer = CourseSerializer(course,fields=fields_to_include)
+
+        return Response(serializer.data,status=status.HTTP_200_OK)
+    except Course.DoesNotExist:
+        return Response({"error" : "Course not found"},status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error" : f"an unexpected error occured : {str(e)}"},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def course_students_overview(request, slug):
+    try:
+        course = Course.objects.get(slug=slug)
+    except Course.DoesNotExist:
+        return Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    total_assignments = LessonAssignment.objects.filter(lesson__course=course).count()
+
+    enrollments = Enrollment.objects.filter(course=course).select_related('student__user')
+
+    students_data = []
+    for enrollment in enrollments:
+        student = enrollment.student
+        submitted_count = AssignmentSubmission.objects.filter(
+            assignment__lesson__course=course,
+            student=student
+        ).count()
+
+        students_data.append({
+            "student_id": student.user.id,
+            "name": student.user.get_full_name() or student.user.username,
+            "email":student.user.email,
+            "progress": float(enrollment.progress),
+            "assignments_submitted": submitted_count,
+            "total_assignments": total_assignments
+        })
+
+    return Response(students_data, status=status.HTTP_200_OK)
