@@ -141,9 +141,25 @@ class LessonAssignment(models.Model):
     file = models.FileField(upload_to='assignment_files/',blank=True,null=True)
     due_date = models.DateTimeField(blank=True,null=True)
     created_at = models.DateTimeField( auto_now_add=True)
+    slug = models.SlugField(default="",null=False,unique=True)
 
     class Meta:
         ordering = ['-created_at']
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            counter = 1
+
+            # Ensure slug uniqueness
+            while LessonAssignment.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+
+            self.slug = slug
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.lesson.title} - {self.title}"

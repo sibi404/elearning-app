@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.db.models import Avg
-from . models import Course,Lesson,LessonMaterials,LessonQuestion,QuestionOption,StudentAnswer,LessonProgress,CourseAnnouncement,LessonAssignment
+from . models import Course,Lesson,LessonMaterials,LessonQuestion,QuestionOption,StudentAnswer,LessonProgress,CourseAnnouncement,LessonAssignment,AssignmentSubmission
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -186,9 +186,71 @@ class LessonAssignmentSerializer(serializers.ModelSerializer):
     def get_grade(self, obj):
         submission = self.get_submission(obj)
         return submission.grade if submission else None
+    
+
+class AssignmentListSerializer(serializers.ModelSerializer):
+    lesson = serializers.CharField(source='lesson.title',read_only=True)
+    total_submissions = serializers.IntegerField()
+    graded_count = serializers.IntegerField()
+    pending_count = serializers.IntegerField()
+
+    class Meta:
+        model = LessonAssignment
+        fields = [
+            'id',
+            'slug',
+            'title',
+            'description',
+            'due_date',
+            'lesson',
+            'total_submissions',
+            'graded_count',
+            'pending_count',
+            'created_at'
+        ]
         
 
+class AssignmentSubmissionSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+    student_email = serializers.CharField(source="student.user.email",read_only=True)
+    file_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AssignmentSubmission
+        fields = [
+            'id',
+            'student_name',
+            'student_email',
+            'submitted_at',
+            'grade',
+            'feedback',
+            'is_graded',
+            'graded_at',
+            'file_name',
+        ]
+
+    def get_student_name(self, obj):
+        first = obj.student.user.first_name or ""
+        last = obj.student.user.last_name or ""
+        return f"{first} {last}".strip()
     
+    def get_file_name(self, obj):
+        if obj.file:
+            return obj.file.name.split("/")[-1]
+        return None
+
+class GradeSubmissionSerializer(serializers.ModelSerializer):
+    grade = serializers.ChoiceField(choices=AssignmentSubmission.GRADE_CHOICES)
+    feedback = serializers.CharField(
+        required = False,
+        allow_blank = True,
+        allow_null = True
+    )
+
+    class Meta:
+        model = AssignmentSubmission
+        fields = ["grade", "feedback"]
+        
 
 class StudentAnswerSerializer(serializers.Serializer):
     questionId = serializers.IntegerField()

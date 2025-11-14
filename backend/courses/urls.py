@@ -22,5 +22,8 @@ urlpatterns = [
    path('teacher-course-list/',teacher_view.course_list,name='teacher-course-list'),
    path('<slug:course_slug>/',teacher_view.course_details,name='course_details'),
    path('<slug:slug>/students/',teacher_view.course_students_overview,name='course_student_overview'),
+   path('<slug:course_slug>/assignments/',teacher_view.course_assignments,name='course_assignments'),
+   path('<slug:assignment_slug>/submissions/',teacher_view.assignment_submissions,name='assignment_submissions'),
+   path('submission/<int:submission_id>/grade/',teacher_view.grade_submission,name='grade_submission'),
    path('add-course-announcement/',teacher_view.add_course_announcement,name='add-course-announcement'),
 ]

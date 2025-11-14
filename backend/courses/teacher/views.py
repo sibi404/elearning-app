@@ -3,13 +3,14 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view,permission_classes
 
-from courses.serializers import CourseAnnouncementSerializer,CourseSerializer
+from courses.serializers import CourseAnnouncementSerializer,CourseSerializer,AssignmentListSerializer,AssignmentSubmissionSerializer,GradeSubmissionSerializer
 from courses.models import Course,AssignmentSubmission,LessonAssignment
 from courses.permissions import IsTeacher
 
 from enrollments.models import Enrollment
 
-from django.db.models import Count,Avg
+from django.db.models import Count,Avg,Q
+from django.shortcuts import get_object_or_404
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated,IsTeacher])
@@ -132,3 +133,51 @@ def course_students_overview(request, slug):
         })
 
     return Response(students_data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsTeacher])
+def course_assignments(request,course_slug):
+    assignments = LessonAssignment.objects.filter(lesson__course__slug=course_slug).annotate(
+        total_submissions = Count('submissions'),
+        graded_count = Count('submissions',filter=Q(submissions__is_graded=True)),
+        pending_count = Count('submissions',filter=Q(submissions__is_graded=False)),
+    )
+
+    serializer = AssignmentListSerializer(assignments,many=True)
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsTeacher])
+def assignment_submissions(request,assignment_slug):
+    assignment = get_object_or_404(LessonAssignment,slug=assignment_slug)
+
+    submissions = AssignmentSubmission.objects.select_related(
+        "student","student__user"
+    ).filter(assignment=assignment)
+
+    serializer = AssignmentSubmissionSerializer(submissions,many=True)
+
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsTeacher])
+def grade_submission(request,submission_id):
+    try:
+        submission = AssignmentSubmission.objects.get(id=submission_id)
+    except AssignmentSubmission.DoesNotExist:
+        return Response({"error" : "Submission not found"},status=status.HTTP_404_NOT_FOUND)
+    
+    serializer = GradeSubmissionSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    
+    grade = serializer.validated_data["grade"]
+    feedback = serializer.validated_data.get("feedback","")
+
+    submission.grade_submission(grade=grade,feedback=feedback)
+
+    updated_data = AssignmentSubmissionSerializer(submission).data
+
+    return Response(updated_data,status=status.HTTP_200_OK)
+    
