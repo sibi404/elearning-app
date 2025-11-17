@@ -11,6 +11,7 @@ __pycache__/
 # Django stuff
 /staticfiles/
 /media/
+*/mediafiles/
 /local_settings.py
 
 # Virtual environment

@@ -11,6 +11,10 @@ from enrollments.models import Enrollment
 
 from django.db.models import Count,Avg,Q
 from django.shortcuts import get_object_or_404
+from django.http import FileResponse,Http404
+from django.utils.text import slugify
+
+import os
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated,IsTeacher])
@@ -181,3 +185,45 @@ def grade_submission(request,submission_id):
 
     return Response(updated_data,status=status.HTTP_200_OK)
     
+def download_assignemnt(request,pk):
+    try:
+        assignment = LessonAssignment.objects.get(pk=pk)
+    except LessonAssignment.DoesNotExist:
+        raise Http404("Assignment not found")
+    
+    if not assignment.file:
+        raise Http404("No file associated with this assignment")
+    
+    try:
+        response = FileResponse(
+            assignment.file.open('rb'),
+            as_attachment=True,
+            filename=assignment.title
+        )
+
+        return response
+    except ValueError:
+        raise Http404("File not found on server")
+
+
+def download_submission(request,pk):
+    try:
+        submission = AssignmentSubmission.objects.get(pk=pk)
+    except AssignmentSubmission.DoesNotExist:
+        raise Http404("Sumbission not found")
+    
+    if not submission.file:
+        raise Http404("No file associated with this submission")
+    
+    try:
+        clean_title = slugify(submission.assignment.title)
+        student_name = submission.student.user.first_name
+        _, ext = os.path.splitext(submission.file.name)
+        response = FileResponse(
+            submission.file.open('rb'),
+            as_attachment=True,
+            filename=f"{clean_title}_{student_name}{ext}"
+        )
+        return response
+    except ValueError:
+        raise Http404("File not found on server")
