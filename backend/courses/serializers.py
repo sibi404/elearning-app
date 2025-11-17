@@ -80,10 +80,28 @@ class LessonListSerializer(serializers.ModelSerializer):
 
 
 class LessonSerializer(serializers.ModelSerializer):
+    """
+    Add include_questions True or False to add or remove questions from serializer
+    """
     progress = serializers.SerializerMethodField()
+    questions = serializers.SerializerMethodField()
+    materials = serializers.SerializerMethodField()
+
     class Meta:
         model = Lesson
-        fields = ['id','course','title','video_id','order','about','slug','progress']
+        fields = ['id','course','title','video_id','order','about','slug','progress','questions','materials']
+
+    
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+
+        include_questions = self.context.get("include_questions",False)
+        include_materials = self.context.get("include_materials",False)
+        
+        if not include_questions:
+            self.fields.pop('questions')
+        if not include_materials:
+            self.fields.pop('meterials')
 
     def get_progress(self,obj):
         request = self.context.get('request')
@@ -103,6 +121,14 @@ class LessonSerializer(serializers.ModelSerializer):
             "time" : 0.0,
             "completed" : False
         }
+    
+    def get_questions(self,obj):
+        from . serializers import LessonQuestionSerializer
+        return LessonQuestionSerializer(obj.questions.all(),many=True).data
+    
+    def get_materials(self,obj):
+        from . serializers import LessonMaterialSerializer
+        return LessonMaterialSerializer(obj.materials.all(),many=True).data
 
 class LessonMaterialSerializer(serializers.ModelSerializer):
     size = serializers.SerializerMethodField()
@@ -132,10 +158,11 @@ class LessonQuestionSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
 
         request = self.context.get('request')
-        student = request.user.student_profile
         answered = False
-        if student:
-            answered = StudentAnswer.objects.filter(student=student,question=instance,is_correct=True).exists()
+        if request:
+            student = request.user.student_profile
+            if student:
+                answered = StudentAnswer.objects.filter(student=student,question=instance,is_correct=True).exists()
             
         return {
             "time": rep["timestamp"],

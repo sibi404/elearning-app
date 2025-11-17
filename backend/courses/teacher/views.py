@@ -3,8 +3,15 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view,permission_classes
 
-from courses.serializers import CourseAnnouncementSerializer,CourseSerializer,AssignmentListSerializer,AssignmentSubmissionSerializer,GradeSubmissionSerializer
-from courses.models import Course,AssignmentSubmission,LessonAssignment
+from courses.serializers import (
+    CourseAnnouncementSerializer,
+    CourseSerializer,
+    AssignmentListSerializer,
+    AssignmentSubmissionSerializer,
+    GradeSubmissionSerializer,
+    LessonSerializer,
+    )
+from courses.models import Course,AssignmentSubmission,LessonAssignment,Lesson
 from courses.permissions import IsTeacher
 
 from enrollments.models import Enrollment
@@ -149,6 +156,32 @@ def course_assignments(request,course_slug):
 
     serializer = AssignmentListSerializer(assignments,many=True)
     return Response(serializer.data,status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsTeacher,IsAuthenticated])
+def course_lessons(request,course_slug):
+    # lessons = Lesson.objects.filter(course__slug=course_slug)
+    try:
+        course = Course.objects.get(slug=course_slug,teacher=request.user.teacher_profile)
+    except Course.DoesNotExist:
+        return Response({"error" : "Course not found or permission denied"},status=status.HTTP_404_NOT_FOUND)
+    
+    lessons = course.lessons.select_related("course").prefetch_related("materials","questions__options")
+    serializer = LessonSerializer(lessons,many=True,context={"include_questions" : True,"include_materials" : True})
+
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated,IsTeacher])
+def delete_lesson(request,lesson_id):
+    try:
+        lesson = Lesson.objects.get(pk=lesson_id)
+    except Lesson.DoesNotExist:
+        return Response({"erro" : "Lesson not found"},status=status.HTTP_404_NOT_FOUND)
+    lesson.delete()
+    return Response({"Message ": "Lesson Deleted"},status=status.HTTP_200_OK)
+
 
 
 @api_view(['GET'])
