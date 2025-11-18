@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, NavLink } from 'react-router-dom';
 import { Play, Edit, Trash2, Eye, Clock, HelpCircle, FileText, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 
 import { usePrivateApi } from '../../../hooks/usePrivateApi';
@@ -90,21 +90,23 @@ const LessonTab = ({ onEdit, onAddNew }) => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
             <div className="w-full mx-auto">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
                     <div>
-                        <h1 className="text-4xl font-bold text-slate-800 mb-2">Course Lessons</h1>
-                        <p className="text-slate-600">{lessons.length} lessons in this course</p>
+                        <h1 className="md:text-2xl font-bold mb-2">Course Lessons</h1>
+                        <p className="text-faded-text text-sm md:text-base">{lessons.length} lessons in this course</p>
                     </div>
-                    <button
-                        onClick={onAddNew}
-                        className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl font-medium"
-                    >
-                        <Plus className="w-5 h-5" />
-                        Add New Lesson
-                    </button>
+                    <NavLink to="add">
+                        <button
+                            onClick={onAddNew}
+                            className="flex items-center justify-center w-full gap-2 mt-3 sm:mt-0 px-3 md:px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl font-medium text-sm md:text-base"
+                        >
+                            <Plus className="w-5 h-5" />
+                            Add New Lesson
+                        </button>
+                    </NavLink>
                 </div>
 
                 {/* Lessons List */}
@@ -132,7 +134,7 @@ const LessonTab = ({ onEdit, onAddNew }) => {
                             >
                                 {/* Lesson Header */}
                                 <div className="p-6">
-                                    <div className="flex items-start gap-4">
+                                    <div className="flex flex-col sm:flex-row items-start gap-4">
                                         {/* Order Badge */}
                                         <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-[#0d2f99] flex items-center justify-center text-white font-bold text-lg shadow-md">
                                             {lesson.order}
@@ -140,12 +142,12 @@ const LessonTab = ({ onEdit, onAddNew }) => {
 
                                         {/* Content */}
                                         <div className="flex-1 min-w-0">
-                                            <div className="flex items-start justify-between gap-4 mb-3">
+                                            <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-3">
                                                 <div className="flex-1">
-                                                    <h3 className="text-lg font-semibold text-slate-800 mb-1">
+                                                    <h3 className="md:text-lg font-semibold text-slate-800 mb-1">
                                                         {lesson.title}
                                                     </h3>
-                                                    <div className="flex items-center gap-4 text-sm text-slate-600">
+                                                    <div className="flex flex-col md:flex-row md:items-center gap-4 text-sm text-slate-600 mt-3 md:mt-0">
                                                         <span className="flex items-center gap-1">
                                                             <Play className="w-3 h-3" />
                                                             Video ID: {lesson.video_id}

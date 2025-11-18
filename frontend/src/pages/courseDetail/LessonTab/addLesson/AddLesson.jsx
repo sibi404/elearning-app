@@ -1,7 +1,14 @@
-import React, { useState } from 'react';
-import { Plus, Trash2, Video, HelpCircle, CheckCircle, X } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Plus, Trash2, HelpCircle, CheckCircle, X, MoveLeft } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Toast } from "primereact/toast";
 
-const AddLesson = ({ courseId, onSubmit }) => {
+import { usePrivateApi } from '../../../../hooks/usePrivateApi';
+import { showNetworkError, showSuccess } from '../../../../utils/toast/toastFunctions';
+import LessonForm from './LessonForm';
+import ErrorAlert from './ErrorAlert';
+
+const AddLesson = () => {
     const [lessonData, setLessonData] = useState({
         title: '',
         video_id: '',
@@ -23,6 +30,13 @@ const AddLesson = ({ courseId, onSubmit }) => {
 
     const [showQuestionForm, setShowQuestionForm] = useState(false);
     const [editingQuestionIndex, setEditingQuestionIndex] = useState(null);
+    const [lessonError, setLessonError] = useState('');
+    const [questionError, setQuestionError] = useState('');
+
+    const navigate = useNavigate();
+    const api = usePrivateApi();
+    const toast = useRef();
+    const { courseSlug } = useParams();
 
     const handleLessonChange = (field, value) => {
         setLessonData(prev => ({ ...prev, [field]: value }));
@@ -48,21 +62,27 @@ const AddLesson = ({ courseId, onSubmit }) => {
     };
 
     const addOrUpdateQuestion = () => {
+        setQuestionError('');
         // Validation
         if (!currentQuestion.timestamp || !currentQuestion.question_text) {
-            alert('Please fill in timestamp and question text');
+            setQuestionError('Please fill in timestamp and question text');
+            return;
+        }
+
+        if (currentQuestion.timestamp <= 0) {
+            setQuestionError("Provide valid timestamp");
             return;
         }
 
         const filledOptions = currentQuestion.options.filter(opt => opt.option_text.trim() !== '');
         if (filledOptions.length < 2) {
-            alert('Please provide at least 2 options');
+            setQuestionError('Please provide at least 2 options');
             return;
         }
 
         const hasCorrectAnswer = currentQuestion.options.some(opt => opt.is_correct);
         if (!hasCorrectAnswer) {
-            alert('Please select a correct answer');
+            setQuestionError('Please select a correct answer')
             return;
         }
 
@@ -114,17 +134,53 @@ const AddLesson = ({ courseId, onSubmit }) => {
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
+    const onSubmit = async () => {
+        try {
+            const { status } = await api.post(`course/${courseSlug}/lessons/create/`, lessonData);
+            if (status === 200) {
+                setLessonData({
+                    title: '',
+                    video_id: '',
+                    order: 1,
+                    about: '',
+                    questions: []
+                })
+
+                setCurrentQuestion({
+                    timestamp: '',
+                    question_text: '',
+                    options: [
+                        { option_text: '', is_correct: false },
+                        { option_text: '', is_correct: false },
+                        { option_text: '', is_correct: false },
+                        { option_text: '', is_correct: false }
+                    ]
+                })
+
+                showSuccess(toast, "Lesson added");
+
+            }
+
+        } catch (err) {
+            console.log(err);
+            if (err.request && !err.response) {
+                showNetworkError(toast);
+            } else {
+                const msg = err.response?.data?.message;
+                if (msg) setLessonError(msg);
+            }
+
+        }
+    };
+
     const handleSubmit = () => {
+        setLessonError("");
 
         if (!lessonData.title || !lessonData.video_id) {
-            alert('Please fill in required fields');
+            setLessonError("Please fill all required fields")
             return;
         }
-
-        // Call the parent onSubmit function with the lesson data
-        if (onSubmit) {
-            onSubmit({ ...lessonData, course: courseId });
-        }
+        onSubmit();
     };
 
     const cancelQuestionForm = () => {
@@ -144,91 +200,32 @@ const AddLesson = ({ courseId, onSubmit }) => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
-            <div className="max-w-5xl mx-auto">
+            <Toast ref={toast} />
+            <div className="w-full mx-auto">
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-4xl font-bold text-slate-800 mb-2">Create New Lesson</h1>
-                    <p className="text-slate-600">Add lesson details and interactive quiz questions</p>
+                <div className="mb-8 flex items-center justify-between">
+                    <div>
+                        <h1 className="md:text-2xl font-bold text-slate-800 mb-2">Create New Lesson</h1>
+                        <p className="text-slate-600">Add lesson details and interactive quiz questions</p>
+                    </div>
+                    <p className='text-sm mb-4 flex items-center gap-1 cursor-pointer' onClick={() => navigate(-1)}>
+                        <MoveLeft size={15} />
+                        Back to lessons
+                    </p>
                 </div>
+
+                {lessonError && <ErrorAlert colseFunction={() => setLessonError('')} error={lessonError} />}
 
                 <div className="space-y-6">
                     {/* Main Lesson Details Card */}
-                    <div className="bg-white rounded-2xl shadow-lg p-8 border border-slate-200">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 rounded-lg bg-[#0A2472] flex items-center justify-center">
-                                <Video className="w-5 h-5 text-white" />
-                            </div>
-                            <h2 className="text-2xl font-semibold text-slate-800">Lesson Information</h2>
-                        </div>
 
-                        <div className="space-y-5">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                                        Lesson Title <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={lessonData.title}
-                                        onChange={(e) => handleLessonChange('title', e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#0A2472] focus:border-transparent transition-all outline-none"
-                                        placeholder="Introduction to React Hooks"
-                                        required
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                                        Lesson Order <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={lessonData.order}
-                                        onChange={(e) => handleLessonChange('order', parseInt(e.target.value))}
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#0A2472] focus:border-transparent transition-all outline-none"
-                                        min="1"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">
-                                    YouTube Video ID <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={lessonData.video_id}
-                                    onChange={(e) => handleLessonChange('video_id', e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#0A2472] focus:border-transparent transition-all outline-none"
-                                    placeholder="dQw4w9WgXcQ"
-                                    required
-                                />
-                                <p className="text-xs text-slate-500 mt-1">
-                                    Example: For youtube.com/watch?v=dQw4w9WgXcQ, enter "dQw4w9WgXcQ"
-                                </p>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">
-                                    About This Lesson
-                                </label>
-                                <textarea
-                                    value={lessonData.about}
-                                    onChange={(e) => handleLessonChange('about', e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#0A2472] focus:border-transparent transition-all outline-none resize-none"
-                                    rows="4"
-                                    placeholder="Describe what students will learn in this lesson..."
-                                />
-                            </div>
-                        </div>
-                    </div>
+                    <LessonForm lessonData={lessonData} handleLessonChange={handleLessonChange} />
 
                     {/* Quiz Questions Section */}
                     <div className="bg-white rounded-2xl shadow-lg p-8 border border-slate-200">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-[#0A2472] flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
                                     <HelpCircle className="w-5 h-5 text-white" />
                                 </div>
                                 <div>
@@ -264,6 +261,9 @@ const AddLesson = ({ courseId, onSubmit }) => {
                                         <X className="w-5 h-5" />
                                     </button>
                                 </div>
+
+                                {/* Error Message */}
+                                {questionError && <ErrorAlert colseFunction={() => setQuestionError('')} error={questionError} />}
 
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -306,8 +306,8 @@ const AddLesson = ({ courseId, onSubmit }) => {
                                                         type="button"
                                                         onClick={() => handleOptionChange(index, 'is_correct', true)}
                                                         className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${option.is_correct
-                                                                ? 'bg-green-500 border-green-500'
-                                                                : 'bg-white border-slate-300 hover:border-[#0A2472]'
+                                                            ? 'bg-green-500 border-green-500'
+                                                            : 'bg-white border-slate-300 hover:border-[#0A2472]'
                                                             }`}
                                                     >
                                                         {option.is_correct && <CheckCircle className="w-4 h-4 text-white" />}

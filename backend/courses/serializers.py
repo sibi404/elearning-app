@@ -101,7 +101,7 @@ class LessonSerializer(serializers.ModelSerializer):
         if not include_questions:
             self.fields.pop('questions')
         if not include_materials:
-            self.fields.pop('meterials')
+            self.fields.pop('materials')
 
     def get_progress(self,obj):
         request = self.context.get('request')

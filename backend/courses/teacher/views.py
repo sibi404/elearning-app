@@ -11,7 +11,7 @@ from courses.serializers import (
     GradeSubmissionSerializer,
     LessonSerializer,
     )
-from courses.models import Course,AssignmentSubmission,LessonAssignment,Lesson
+from courses.models import Course,AssignmentSubmission,LessonAssignment,Lesson,LessonQuestion,QuestionOption
 from courses.permissions import IsTeacher
 
 from enrollments.models import Enrollment
@@ -43,6 +43,50 @@ def add_course_announcement(request):
         return Response({"message" : "created"},status=status.HTTP_201_CREATED)
     
     return Response(serilizer.error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated,IsTeacher])
+def add_lesson(request,course_slug):
+    try:
+        course = Course.objects.get(slug=course_slug)
+    except Course.DoesNotExist:
+        return Response({"error" : "Course not found"},status=status.HTTP_404_NOT_FOUND)
+    
+    data = request.data
+    order = data.get("order",1)
+
+    if Lesson.objects.filter(course=course, order=order).exists():
+        return Response(
+            {"message": f"Lesson with order {order} already exists in this course."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    lesson = Lesson.objects.create(
+        course=course,
+        title=data.get('title'),
+        video_id = data.get("video_id"),
+        order = data.get("order",1),
+        about=data.get("about","")
+    )
+
+    questions = data.get("questions",[])
+
+    for q in questions:
+        question = LessonQuestion.objects.create(
+            lesson=lesson,
+            timestamp=q.get("timestamp"),
+            question_text = q.get("question_text")
+        )
+
+        for opt in q.get("options",[]):
+            QuestionOption.objects.create(
+                question = question,
+                option_text = opt.get("option_text"),
+                is_correct = opt.get("is_correct",False)
+            )
+
+    return Response({"message" : "Lesson created successfully"})
+
 
 @api_view(['GET'])
 @permission_classes([IsTeacher])

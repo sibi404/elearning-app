@@ -30,9 +30,9 @@ const AssignmentTab = () => {
     }, []);
 
     return (
-        <div>
-            <h2 className="md:text-2xl font-semibold">Assignments</h2>
-            <p className="text-faded-text text-xs md:text-sm">Manage and grade student assignments</p>
+        <div className="min-h-screen">
+            <h2 className="md:text-2xl font-bold mb-2">Assignments</h2>
+            <p className="text-faded-text text-sm md:text-base">Manage and grade student assignments</p>
             <div className="mt-3">
                 {!isLoading && assignemnts.length === 0 && <div className="flex items-center justify-center">No assignments found</div>}
 

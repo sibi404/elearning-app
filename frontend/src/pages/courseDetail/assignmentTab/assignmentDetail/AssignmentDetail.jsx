@@ -51,13 +51,13 @@ const AssignmentDetail = () => {
             <div className="w-full mx-auto">
                 <p className='text-sm mb-4 flex items-center gap-1 cursor-pointer' onClick={() => navigate(-1)}>
                     <MoveLeft size={15} />
-                    Back to assignments</p>
+                    Back to assignments
+                </p>
                 {/* Assignment Header */}
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
                     <div className="flex flex-col md:flex-row items-start justify-between mb-4">
                         <button className="flex md:order-2 self-end md:self-auto mb-3 md:mb-0 items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors">
                             <Download size={16} />
-                            {/* <span className='hidden sm:block'>Download Assignment</span> */}
                             <a href={`${BASE_URL}/course/assignment/${assignmentData.id}/download/`} download className='hidden sm:block'>Download Assignment</a>
                         </button>
 

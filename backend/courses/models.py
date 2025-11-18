@@ -32,8 +32,8 @@ class Lesson(models.Model):
     title = models.CharField(max_length=100)
     video_id = models.CharField(max_length=20)
     order = models.PositiveIntegerField(default=1)
-    about = models.TextField(null=True)
-    slug = models.SlugField(default="",null=False,unique=True)
+    about = models.TextField(null=True,blank=True)
+    slug = models.SlugField(default="",null=False,unique=True,max_length=200)
 
     class Meta:
         ordering = ['order']
