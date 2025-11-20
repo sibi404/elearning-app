@@ -4,7 +4,7 @@ import { Play, Edit, Trash2, Eye, Clock, HelpCircle, FileText, Plus, ChevronDown
 
 import { usePrivateApi } from '../../../hooks/usePrivateApi';
 
-const LessonTab = ({ onEdit, onAddNew }) => {
+const LessonTab = ({ onEdit }) => {
 
     const { courseSlug } = useParams();
 
@@ -15,7 +15,6 @@ const LessonTab = ({ onEdit, onAddNew }) => {
 
     const api = usePrivateApi();
 
-    // Mock data - Replace with actual API call
     useEffect(() => {
         const getLessons = async () => {
             try {
@@ -100,7 +99,6 @@ const LessonTab = ({ onEdit, onAddNew }) => {
                     </div>
                     <NavLink to="add">
                         <button
-                            onClick={onAddNew}
                             className="flex items-center justify-center w-full gap-2 mt-3 sm:mt-0 px-3 md:px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl font-medium text-sm md:text-base"
                         >
                             <Plus className="w-5 h-5" />
@@ -118,7 +116,6 @@ const LessonTab = ({ onEdit, onAddNew }) => {
                         <h3 className="text-xl font-semibold text-slate-800 mb-2">No lessons yet</h3>
                         <p className="text-slate-600 mb-6">Start building your course by adding your first lesson</p>
                         <button
-                            onClick={onAddNew}
                             className="px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 transition-all inline-flex items-center gap-2"
                         >
                             <Plus className="w-5 h-5" />

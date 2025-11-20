@@ -20,7 +20,7 @@ const CoursePerformanceCard = ({ courseTitle, completion, studentsCount }) => {
                     </p>
                 </div>
                 <div>
-                    <h1 className="text-2xl font-bold text-right">{completion}%</h1>
+                    <h1 className="text-2xl font-bold text-right">{completion?.toFixed(1)}%</h1>
                     <p className="text-xs text-faded-text mt-2">Avg completion</p>
                 </div>
             </div>

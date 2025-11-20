@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Plus, Trash2, HelpCircle, CheckCircle, X, MoveLeft } from 'lucide-react';
+import { Plus, Trash2, HelpCircle, CheckCircle, MoveLeft } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Toast } from "primereact/toast";
 
@@ -7,6 +7,7 @@ import { usePrivateApi } from '../../../../hooks/usePrivateApi';
 import { showNetworkError, showSuccess } from '../../../../utils/toast/toastFunctions';
 import LessonForm from './LessonForm';
 import ErrorAlert from './ErrorAlert';
+import QuestionForm from './QuestionForm';
 
 const AddLesson = () => {
     const [lessonData, setLessonData] = useState({
@@ -206,7 +207,7 @@ const AddLesson = () => {
                 <div className="mb-8 flex items-center justify-between">
                     <div>
                         <h1 className="md:text-2xl font-bold text-slate-800 mb-2">Create New Lesson</h1>
-                        <p className="text-slate-600">Add lesson details and interactive quiz questions</p>
+                        <p className="text-faded-text">Add lesson details and interactive quiz questions</p>
                     </div>
                     <p className='text-sm mb-4 flex items-center gap-1 cursor-pointer' onClick={() => navigate(-1)}>
                         <MoveLeft size={15} />
@@ -247,102 +248,16 @@ const AddLesson = () => {
                         </div>
 
                         {/* Question Form */}
-                        {showQuestionForm && (
-                            <div className="mb-6 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-[#0A2472]/20">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-lg font-semibold text-slate-800">
-                                        {editingQuestionIndex !== null ? 'Edit Question' : 'New Question'}
-                                    </h3>
-                                    <button
-                                        type="button"
-                                        onClick={cancelQuestionForm}
-                                        className="text-slate-400 hover:text-slate-600 transition-colors"
-                                    >
-                                        <X className="w-5 h-5" />
-                                    </button>
-                                </div>
-
-                                {/* Error Message */}
-                                {questionError && <ErrorAlert colseFunction={() => setQuestionError('')} error={questionError} />}
-
-                                <div className="space-y-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                        <div className="md:col-span-1">
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">
-                                                Timestamp (seconds)
-                                            </label>
-                                            <input
-                                                type="number"
-                                                value={currentQuestion.timestamp}
-                                                onChange={(e) => handleQuestionChange('timestamp', e.target.value)}
-                                                className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#0A2472] focus:border-transparent transition-all outline-none"
-                                                placeholder="120"
-                                                min="0"
-                                            />
-                                        </div>
-
-                                        <div className="md:col-span-3">
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">
-                                                Question Text
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={currentQuestion.question_text}
-                                                onChange={(e) => handleQuestionChange('question_text', e.target.value)}
-                                                className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#0A2472] focus:border-transparent transition-all outline-none"
-                                                placeholder="What is the primary purpose of useState?"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-3">
-                                            Answer Options (Select the correct one)
-                                        </label>
-                                        <div className="space-y-3">
-                                            {currentQuestion.options.map((option, index) => (
-                                                <div key={index} className="flex items-center gap-3">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleOptionChange(index, 'is_correct', true)}
-                                                        className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${option.is_correct
-                                                            ? 'bg-green-500 border-green-500'
-                                                            : 'bg-white border-slate-300 hover:border-[#0A2472]'
-                                                            }`}
-                                                    >
-                                                        {option.is_correct && <CheckCircle className="w-4 h-4 text-white" />}
-                                                    </button>
-                                                    <input
-                                                        type="text"
-                                                        value={option.option_text}
-                                                        onChange={(e) => handleOptionChange(index, 'option_text', e.target.value)}
-                                                        className="flex-1 px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#0A2472] focus:border-transparent transition-all outline-none"
-                                                        placeholder={`Option ${index + 1}`}
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div className="flex justify-end gap-3 pt-2">
-                                        <button
-                                            type="button"
-                                            onClick={cancelQuestionForm}
-                                            className="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 transition-all"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={addOrUpdateQuestion}
-                                            className="px-5 py-2.5 rounded-xl bg-[#0A2472] text-white hover:bg-[#0A2472]/90 transition-all shadow-md hover:shadow-lg"
-                                        >
-                                            {editingQuestionIndex !== null ? 'Update Question' : 'Add Question'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                        {showQuestionForm && <QuestionForm
+                            handleOptionChange={handleOptionChange}
+                            handleQuestionChange={handleQuestionChange}
+                            setQuestionError={setQuestionError}
+                            cancelQuestionForm={cancelQuestionForm}
+                            addOrUpdateQuestion={addOrUpdateQuestion}
+                            editingQuestionIndex={editingQuestionIndex}
+                            questionError={questionError}
+                            currentQuestion={currentQuestion}
+                        />}
 
                         {/* Questions List */}
                         {lessonData.questions.length > 0 ? (
@@ -409,6 +324,7 @@ const AddLesson = () => {
                     {/* Submit Button */}
                     <div className="flex justify-end gap-4">
                         <button
+                            onClick={() => navigate(-1)}
                             type="button"
                             className="px-6 py-3 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 transition-all font-medium"
                         >

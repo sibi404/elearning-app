@@ -1,7 +1,10 @@
 import { CircleCheck, Calendar, Clock, ClockFading, Upload } from "lucide-react";
+import { useState } from "react";
 
 const AssignmentCard = ({ assignment, dueDate, submitDate, setShowAssignmentModal, setSelectedAssignment }) => {
-    const { title, description, submitted, graded, grade } = assignment;
+    const { title, description, submitted, graded, grade, feedback } = assignment;
+
+    const [showFeedback, setShowFeedback] = useState(false);
 
     return (
         <div className="assignment-card container-border px-4 py-2 mt-3">
@@ -41,7 +44,11 @@ const AssignmentCard = ({ assignment, dueDate, submitDate, setShowAssignmentModa
                 </div>
                 {
                     submitted ?
-                        <FeedbackButton />
+                        <button className={`text-sm font-medium container-border px-4 py-2 ${graded ? "cursor-pointer" : "cursor-not-allowed opacity-50"} hover:text-white hover:bg-primary`}
+                            disabled={!graded}
+                            onClick={() => setShowFeedback(prev => !prev)}>
+                            {showFeedback ? "Hide Feedback" : "View Feedback"}
+                        </button>
                         :
                         <SubmitButton
                             onClick={() => {
@@ -51,6 +58,13 @@ const AssignmentCard = ({ assignment, dueDate, submitDate, setShowAssignmentModa
                         />
                 }
             </div>
+            {
+                showFeedback &&
+                <div className="mt-3 p-3 border-t border-t-gray-300">
+                    <h5 className="font-semibold text-sm">Feedback</h5>
+                    <p className="mt-4 text-sm">{feedback}</p>
+                </div>
+            }
         </div>
     );
 };
@@ -65,12 +79,6 @@ const StatusBadge = ({ submitted }) => {
             {submitted ? <CircleCheck className="w-3 h-3" /> : <ClockFading className="w-3 h-3" />}
             <span className="hidden sm:inline">{submitted ? "Submitted" : "Pending"}</span>
         </div>
-    );
-};
-
-const FeedbackButton = () => {
-    return (
-        <button className="text-sm font-medium container-border px-4 py-2 cursor-pointer hover:text-white hover:bg-primary">View Feedback</button>
     );
 };
 

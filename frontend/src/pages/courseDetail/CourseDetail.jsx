@@ -38,7 +38,7 @@ const CourseDetail = () => {
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-between mt-7">
                 <CourseInsightCard title={"Total Students"} value={courseDetails.total_students} icon={Users} />
-                <CourseInsightCard title={"Avg. Completion"} value={`${courseDetails.overall_progress}%`} icon={TrendingUp} />
+                <CourseInsightCard title={"Avg. Completion"} value={`${courseDetails.overall_progress?.toFixed(1)}%`} icon={TrendingUp} />
                 <CourseInsightCard title={"Total Lessons"} value={courseDetails.total_lessons} icon={BookOpen} />
             </div>
             <NavTabs
@@ -48,7 +48,7 @@ const CourseDetail = () => {
                 setActiveTab={setActiveTab}
             />
             <div className="mt-5">
-                <Outlet />
+                <Outlet context={{ courseId: courseDetails.id }} />
             </div>
         </main>
     )

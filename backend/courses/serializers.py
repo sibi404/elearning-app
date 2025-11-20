@@ -48,6 +48,22 @@ class LessonListSerializer(serializers.ModelSerializer):
         fields = ['id','title','slug','completed','unlocked','order']
     
 
+
+    def __init__(self, *args, **kwargs):
+        fields = kwargs.pop('fields', None)
+        super().__init__(*args, **kwargs)
+
+        if not fields:
+            return
+        
+        allowed = set(fields)
+        
+        existing = set(self.fields)
+
+        for field_name in existing - allowed:
+            self.fields.pop(field_name)
+
+
     def get_completed(self,obj):
         request = self.context.get('request')
         if not request or not hasattr(request.user,'student_profile'):
@@ -181,10 +197,11 @@ class LessonAssignmentSerializer(serializers.ModelSerializer):
     submitted = serializers.SerializerMethodField()
     submitted_at = serializers.SerializerMethodField()
     grade = serializers.SerializerMethodField()
+    feedback = serializers.SerializerMethodField()
 
     class Meta:
         model = LessonAssignment
-        fields = ['id','title','description','file','due_date','created_at','graded','grade','submitted','submitted_at']
+        fields = ['id','title','description','file','due_date','created_at','graded','grade','submitted','submitted_at','feedback']
 
     
 
@@ -214,6 +231,15 @@ class LessonAssignmentSerializer(serializers.ModelSerializer):
         submission = self.get_submission(obj)
         return submission.grade if submission else None
     
+    def get_feedback(self,obj):
+        submission = self.get_submission(obj)
+        return submission.feedback if submission else None
+
+class LessonAssignmentCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LessonAssignment
+        fields = ['lesson', 'title', 'description', 'file', 'due_date']
+
 
 class AssignmentListSerializer(serializers.ModelSerializer):
     lesson = serializers.CharField(source='lesson.title',read_only=True)

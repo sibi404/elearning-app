@@ -5,7 +5,7 @@ from . teacher import views as teacher_view
 
 
 urlpatterns = [
-   path('get-lessons/<int:course_id>/',views.get_lessons,name='get-lessons'),
+   path('get-lessons/<int:course_id>/',views.get_lessons,name='get_lessons'),
    path('lesson-details/<slug:slug>/',views.get_lesson_details,name='get-lesson-details'),
    path('get-course-announcements/',views.get_announcements,name='get-announcements'),
    path('get-lesson-materials/<int:lesson_id>/',views.get_lesson_materials,name='get-lesson-materials'),
@@ -22,13 +22,14 @@ urlpatterns = [
    path('teacher-course-list/',teacher_view.course_list,name='teacher-course-list'),
    path('<slug:course_slug>/',teacher_view.course_details,name='course_details'),
    path('<slug:slug>/students/',teacher_view.course_students_overview,name='course_student_overview'),
+   path('assignment/create/',teacher_view.create_lesson_assignment,name='create-assignment'),
    path('assignment/<int:pk>/download/',teacher_view.download_assignemnt,name='download_assignment'),
    path('assignment/submission/<int:pk>/download/',teacher_view.download_submission,name='download_submission'),
    path('lesson/<int:lesson_id>/delete/',teacher_view.delete_lesson,name='delete_lesson'),
    path('<slug:course_slug>/lessons/',teacher_view.course_lessons,name='course_lessons'),
    path('<slug:course_slug>/lessons/create/',teacher_view.add_lesson,name='add_lesson'),
    path('<slug:course_slug>/assignments/',teacher_view.course_assignments,name='course_assignments'),
-   path('<slug:assignment_slug>/submissions/',teacher_view.assignment_submissions,name='assignment_submissions'),
-   path('submission/<int:submission_id>/grade/',teacher_view.grade_submission,name='grade_submission'),
+   path('<slug:assignment_slug>/submissions/',teacher_view.assignment_submissions,name='assignment-submissions'),
+   path('submission/<int:submission_id>/grade/',teacher_view.grade_submission,name='grade-submission'),
    path('add-course-announcement/',teacher_view.add_course_announcement,name='add-course-announcement'),
 ]

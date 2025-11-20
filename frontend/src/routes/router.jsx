@@ -23,6 +23,7 @@ import AssignmentTab from "../pages/courseDetail/assignmentTab/AssignmentTab";
 import DiscussionTab from "../pages/courseDetail/discussionTab/DiscussionTab";
 import AssignmentDetail from "../pages/courseDetail/assignmentTab/assignmentDetail/AssignmentDetail";
 import AddLesson from "../pages/courseDetail/LessonTab/addLesson/AddLesson";
+import AddAssignment from "../pages/courseDetail/assignmentTab/addAssignment/AddAssignment";
 
 
 export const router = createBrowserRouter([
@@ -122,6 +123,10 @@ export const router = createBrowserRouter([
                                     {
                                         index: true,
                                         element: <AssignmentTab />
+                                    },
+                                    {
+                                        path: "add",
+                                        element: <AddAssignment />
                                     },
                                     {
                                         path: ":assignmentSlug",

@@ -3,6 +3,8 @@ import { Send, Download } from "lucide-react";
 import formatDate from "../../../../utils/formatDate";
 import { usePrivateApi } from "../../../../hooks/usePrivateApi";
 
+import { BASE_URL } from "../../../../config";
+
 const GradingModal = ({ selectedSubmission, assignmentData, setGradeModalOpen, grade, setGrade, feedback, setFeedback, setSubmissionsData, setAssignmentData }) => {
     const gradeOptions = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D', 'F'];
 
@@ -35,7 +37,8 @@ const GradingModal = ({ selectedSubmission, assignmentData, setGradeModalOpen, g
                     return {
                         ...prev,
                         graded_count: prev.graded_count + 1,
-                        pending_count: prev.pending_count - 1,
+                        pending_count: prev.pending_count > 0
+                            ? prev.pending_count - 1 : 0,
                     };
                 }
                 return prev;
@@ -72,10 +75,12 @@ const GradingModal = ({ selectedSubmission, assignmentData, setGradeModalOpen, g
                                 <p className="text-sm font-medium text-slate-700">Submitted File</p>
                                 <p className="text-sm text-slate-600 mt-1">{selectedSubmission.file}</p>
                             </div>
-                            <button className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2 cursor-pointer">
-                                <Download size={16} />
-                                Download
-                            </button>
+                            <a href={`${BASE_URL}/course/assignment/submission/${selectedSubmission.id}/download/`} download>
+                                <button className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2 cursor-pointer">
+                                    <Download size={16} />
+                                    Download
+                                </button>
+                            </a>
                         </div>
                         <p className="text-xs text-slate-500 mt-2">
                             Submitted on {formatDate(selectedSubmission.submitted_at)}

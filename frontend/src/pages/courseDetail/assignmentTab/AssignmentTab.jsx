@@ -1,5 +1,6 @@
 import { NavLink, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Plus } from "lucide-react";
 
 import { usePrivateApi } from "../../../hooks/usePrivateApi";
 import { DATE_FORMAT } from "../../../config";
@@ -31,8 +32,20 @@ const AssignmentTab = () => {
 
     return (
         <div className="min-h-screen">
-            <h2 className="md:text-2xl font-bold mb-2">Assignments</h2>
-            <p className="text-faded-text text-sm md:text-base">Manage and grade student assignments</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
+                <div>
+                    <h2 className="md:text-2xl font-bold mb-2">Assignments</h2>
+                    <p className="text-faded-text text-sm md:text-base">Manage and grade student assignments</p>
+                </div>
+                <NavLink to="add">
+                    <button
+                        className="flex items-center justify-center w-full gap-2 mt-3 sm:mt-0 px-3 md:px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl font-medium text-sm md:text-base"
+                    >
+                        <Plus className="w-5 h-5" />
+                        Add New Assignment
+                    </button>
+                </NavLink>
+            </div>
             <div className="mt-3">
                 {!isLoading && assignemnts.length === 0 && <div className="flex items-center justify-center">No assignments found</div>}
 

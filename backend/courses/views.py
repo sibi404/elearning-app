@@ -64,7 +64,10 @@ def get_lessons(request,course_id):
 
     if not lessons.exists():
         return Response({"Message" : "No lesson found for this course"},status=status.HTTP_404_NOT_FOUND)
-    serializer = LessonListSerializer(lessons,many=True,context={'request' : request})
+    
+    fields = request.query_params.getlist('fields[]',None)
+    print(fields)
+    serializer = LessonListSerializer(lessons,many=True,context={'request' : request},fields=fields)
 
     return Response(serializer.data,status=status.HTTP_200_OK)
 
